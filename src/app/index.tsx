@@ -1,95 +1,164 @@
-import { Link } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// Import all screens
+import { WelcomeScreen } from "../screens/auth/WelcomeScreen";
+import { LoginScreen } from "../screens/auth/LoginScreen";
+import { RegisterScreen } from "../screens/auth/RegisterScreen";
+import { RoleSelectionScreen } from "../screens/auth/RoleSelectionScreen";
+import { FarmerHomeScreen } from "../screens/farmer/FarmerHomeScreen";
+import { ProductBrowseScreen } from "../screens/farmer/ProductBrowseScreen";
+import { OrdersScreen } from "../screens/farmer/OrdersScreen";
+import { ShopDashboardScreen } from "../screens/shop/ShopDashboardScreen";
+import { InventoryScreen } from "../screens/shop/InventoryScreen";
+import { DevMenuScreen } from "../screens/shared/DevMenuScreen";
+import { ComponentShowcaseScreen } from "../screens/shared/ComponentShowcaseScreen";
+
+type ScreenType = 
+  | 'welcome' | 'login' | 'register' | 'role-selection'
+  | 'farmer-home' | 'product-browse' | 'farmer-orders'
+  | 'shop-dashboard' | 'inventory'
+  | 'dev-menu' | 'component-showcase';
 
 export default function Page() {
-  return (
-    <View className="flex flex-1">
-      <Header />
-      <Content />
-      <Footer />
-    </View>
-  );
-}
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('dev-menu');
+  const [userRole, setUserRole] = useState<'farmer' | 'shop_owner' | null>(null);
 
-function Content() {
+  const navigateToScreen = (screen: string) => {
+    setCurrentScreen(screen as ScreenType);
+  };
+
+  const handleLogin = (email: string, password: string) => {
+    // Mock login - in real app, this would authenticate with backend
+    console.log('Login attempt:', { email, password });
+    setCurrentScreen('role-selection');
+  };
+
+  const handleRegister = (data: any) => {
+    // Mock registration - in real app, this would register with backend
+    console.log('Registration data:', data);
+    setCurrentScreen('role-selection');
+  };
+
+  const handleRoleSelection = (role: 'farmer' | 'shop_owner') => {
+    setUserRole(role);
+    if (role === 'farmer') {
+      setCurrentScreen('farmer-home');
+    } else {
+      setCurrentScreen('shop-dashboard');
+    }
+  };
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'welcome':
+        return (
+          <WelcomeScreen
+            onLogin={() => setCurrentScreen('login')}
+            onRegister={() => setCurrentScreen('register')}
+          />
+        );
+
+      case 'login':
+        return (
+          <LoginScreen
+            onLogin={handleLogin}
+            onForgotPassword={() => console.log('Forgot password')}
+            onRegister={() => setCurrentScreen('register')}
+            onBack={() => setCurrentScreen('welcome')}
+          />
+        );
+
+      case 'register':
+        return (
+          <RegisterScreen
+            onRegister={handleRegister}
+            onLogin={() => setCurrentScreen('login')}
+            onBack={() => setCurrentScreen('welcome')}
+          />
+        );
+
+      case 'role-selection':
+        return (
+          <RoleSelectionScreen
+            onRoleSelect={handleRoleSelection}
+            onBack={() => setCurrentScreen('welcome')}
+          />
+        );
+
+      case 'farmer-home':
+        return (
+          <FarmerHomeScreen
+            onSearchPress={() => setCurrentScreen('product-browse')}
+            onProductPress={(id) => console.log('Product pressed:', id)}
+            onShopPress={(id) => console.log('Shop pressed:', id)}
+            onCategoryPress={(category) => console.log('Category:', category)}
+            onViewAllProducts={() => setCurrentScreen('product-browse')}
+            onViewAllShops={() => console.log('View all shops')}
+          />
+        );
+
+      case 'product-browse':
+        return (
+          <ProductBrowseScreen
+            onProductPress={(id) => console.log('Product pressed:', id)}
+            onFilterPress={() => console.log('Filter pressed')}
+            onBack={() => setCurrentScreen('farmer-home')}
+          />
+        );
+
+      case 'farmer-orders':
+        return (
+          <OrdersScreen
+            onOrderPress={(id) => console.log('Order pressed:', id)}
+            onTrackOrder={(id) => console.log('Track order:', id)}
+            onReorder={(id) => console.log('Reorder:', id)}
+            onBack={() => setCurrentScreen('farmer-home')}
+          />
+        );
+
+      case 'shop-dashboard':
+        return (
+          <ShopDashboardScreen
+            onOrderPress={(id) => console.log('Order pressed:', id)}
+            onInventoryPress={() => setCurrentScreen('inventory')}
+            onAnalyticsPress={() => console.log('Analytics pressed')}
+            onMessagesPress={() => console.log('Messages pressed')}
+            onAddProductPress={() => console.log('Add product pressed')}
+          />
+        );
+
+      case 'inventory':
+        return (
+          <InventoryScreen
+            onProductPress={(id) => console.log('Product pressed:', id)}
+            onAddProductPress={() => console.log('Add product pressed')}
+            onEditProductPress={(id) => console.log('Edit product:', id)}
+            onBack={() => setCurrentScreen('shop-dashboard')}
+          />
+        );
+
+      case 'component-showcase':
+        return (
+          <ComponentShowcaseScreen
+            onBack={() => setCurrentScreen('dev-menu')}
+          />
+        );
+
+      case 'dev-menu':
+      default:
+        return (
+          <DevMenuScreen
+            onNavigate={navigateToScreen}
+            onBack={() => setCurrentScreen('welcome')}
+          />
+        );
+    }
+  };
+
   return (
     <View className="flex-1">
-      <View className="py-12 md:py-24 lg:py-32 xl:py-48">
-        <View className="px-4 md:px-6">
-          <View className="flex flex-col items-center gap-4 text-center">
-            <Text
-              role="heading"
-              className="text-3xl text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
-            >
-              Welcome to Project ACME
-            </Text>
-            <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-500 md:text-xl dark:text-gray-400">
-              Discover and collaborate on acme. Explore our services now.
-            </Text>
-
-            <View className="gap-4">
-              <Link
-                suppressHighlighting
-                className="flex h-9 items-center justify-center overflow-hidden rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 web:shadow ios:shadow transition-colors hover:bg-gray-900/90 active:bg-gray-400/90 web:focus-visible:outline-none web:focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                href="/"
-              >
-                Explore
-              </Link>
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function Header() {
-  const { top } = useSafeAreaInsets();
-  return (
-    <View style={{ paddingTop: top }}>
-      <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between ">
-        <Link className="font-bold flex-1 items-center justify-center" href="/">
-          ACME
-        </Link>
-        <View className="flex flex-row gap-4 sm:gap-6">
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            About
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            Product
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            Pricing
-          </Link>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function Footer() {
-  const { bottom } = useSafeAreaInsets();
-  return (
-    <View
-      className="flex shrink-0 bg-gray-100 native:hidden"
-      style={{ paddingBottom: bottom }}
-    >
-      <View className="py-6 flex-1 items-start px-4 md:px-6 ">
-        <Text className={"text-center text-gray-700"}>
-          © {new Date().getFullYear()} Me
-        </Text>
-      </View>
+      {renderScreen()}
     </View>
   );
 }
