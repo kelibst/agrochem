@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ViewStyle, TextStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -23,6 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   className = '',
 }) => {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
 
@@ -44,59 +46,94 @@ export const Button: React.FC<ButtonProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-primary-600 active:bg-primary-700';
+        return {
+          backgroundColor: theme.primary,
+          borderWidth: 0,
+        };
       case 'secondary':
-        return 'bg-secondary-600 active:bg-secondary-700';
+        return {
+          backgroundColor: theme.secondary,
+          borderWidth: 0,
+        };
       case 'outline':
-        return 'border-2 border-primary-600 bg-transparent active:bg-primary-50';
+        return {
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderColor: theme.primary,
+        };
       case 'ghost':
-        return 'bg-transparent active:bg-primary-50';
+        return {
+          backgroundColor: 'transparent',
+          borderWidth: 0,
+        };
       default:
-        return 'bg-primary-600 active:bg-primary-700';
+        return {
+          backgroundColor: theme.primary,
+          borderWidth: 0,
+        };
     }
   };
 
   const getSizeStyles = () => {
     switch (size) {
       case 'sm':
-        return 'px-3 py-2 rounded-lg';
+        return { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 };
       case 'md':
-        return 'px-4 py-3 rounded-xl';
+        return { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 };
       case 'lg':
-        return 'px-6 py-4 rounded-xl';
+        return { paddingHorizontal: 24, paddingVertical: 16, borderRadius: 12 };
       default:
-        return 'px-4 py-3 rounded-xl';
+        return { paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 };
     }
   };
 
-  const getTextStyles = () => {
-    const baseStyles = 'font-semibold text-center';
-    const variantStyles = variant === 'outline' || variant === 'ghost' 
-      ? 'text-primary-600' 
-      : 'text-white';
-    
-    const sizeStyles = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base';
-    
-    return `${baseStyles} ${variantStyles} ${sizeStyles}`;
+  const getTextColor = () => {
+    switch (variant) {
+      case 'outline':
+      case 'ghost':
+        return theme.primary;
+      default:
+        return theme.onPrimary;
+    }
+  };
+
+  const getTextSize = () => {
+    switch (size) {
+      case 'sm': return 14;
+      case 'lg': return 18;
+      default: return 16;
+    }
   };
 
   return (
     <AnimatedTouchableOpacity
-      style={animatedStyle}
+      style={[
+        animatedStyle,
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: disabled ? 0.5 : 1,
+          ...getVariantStyles(),
+          ...getSizeStyles(),
+        },
+      ]}
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled}
-      className={`
-        ${getVariantStyles()}
-        ${getSizeStyles()}
-        flex-row items-center justify-center
-        ${disabled ? 'opacity-50' : ''}
-        ${className}
-      `}
     >
-      {icon && <Text className="mr-2">{icon}</Text>}
-      <Text className={getTextStyles()}>{title}</Text>
+      {icon && <Text style={{ marginRight: 8, fontSize: getTextSize() }}>{icon}</Text>}
+      <Text
+        style={{
+          fontSize: getTextSize(),
+          fontWeight: '600',
+          textAlign: 'center',
+          color: getTextColor(),
+        }}
+      >
+        {title}
+      </Text>
     </AnimatedTouchableOpacity>
   );
 };

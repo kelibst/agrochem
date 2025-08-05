@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
+import { useTheme } from "../context/ThemeContext";
+import { FloatingDevButton } from "../components/FloatingDevButton";
 
 // Import all screens
 import { WelcomeScreen } from "../screens/auth/WelcomeScreen";
@@ -21,6 +23,7 @@ type ScreenType =
   | 'dev-menu' | 'component-showcase';
 
 export default function Page() {
+  const { theme } = useTheme();
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dev-menu');
   const [userRole, setUserRole] = useState<'farmer' | 'shop_owner' | null>(null);
 
@@ -157,8 +160,14 @@ export default function Page() {
   };
 
   return (
-    <View className="flex-1">
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       {renderScreen()}
+      
+      {/* Floating Dev Button - Hide on dev-menu screen */}
+      <FloatingDevButton
+        onPress={() => setCurrentScreen('dev-menu')}
+        visible={currentScreen !== 'dev-menu'}
+      />
     </View>
   );
 }

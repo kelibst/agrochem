@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Button } from '../../components/Button';
+import { useTheme } from '../../context/ThemeContext';
 
 interface WelcomeScreenProps {
   onLogin: () => void;
@@ -13,8 +14,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onLogin,
   onRegister,
 }) => {
+  const { theme } = useTheme();
+  
   return (
-    <SafeAreaView className="flex-1 bg-gradient-to-br from-primary-50 to-primary-100">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 px-6 justify-center">
           {/* Logo and Header */}

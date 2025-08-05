@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, TextInputProps } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -21,8 +22,9 @@ export const Input: React.FC<InputProps> = ({
   className = '',
   ...props
 }) => {
+  const { theme } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
-  const borderColor = useSharedValue('#e5e5e5');
+  const borderColor = useSharedValue(theme.inputBorder);
 
   const animatedStyle = useAnimatedStyle(() => ({
     borderColor: borderColor.value,
@@ -30,48 +32,67 @@ export const Input: React.FC<InputProps> = ({
 
   const handleFocus = (e: any) => {
     setIsFocused(true);
-    borderColor.value = withTiming('#16a34a', { duration: 200 });
+    borderColor.value = withTiming(theme.primary, { duration: 200 });
     props.onFocus?.(e);
   };
 
   const handleBlur = (e: any) => {
     setIsFocused(false);
-    borderColor.value = withTiming(error ? '#ef4444' : '#e5e5e5', { duration: 200 });
+    borderColor.value = withTiming(error ? theme.error : theme.inputBorder, { duration: 200 });
     props.onBlur?.(e);
   };
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'filled':
-        return 'bg-neutral-50 border-0';
+        return {
+          backgroundColor: theme.surfaceVariant,
+          borderWidth: 0,
+        };
       case 'outlined':
-        return 'bg-transparent border-2';
+        return {
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+        };
       default:
-        return 'bg-white border';
+        return {
+          backgroundColor: theme.inputBackground,
+          borderWidth: 1,
+        };
     }
   };
 
   return (
-    <View className={`mb-4 ${className}`}>
+    <View style={{ marginBottom: 16 }}>
       {label && (
-        <Text className={`text-sm font-medium mb-2 ${
-          isFocused ? 'text-primary-600' : 'text-neutral-700'
-        }`}>
+        <Text
+          style={{
+            fontSize: 14,
+            fontWeight: '500',
+            marginBottom: 8,
+            color: isFocused ? theme.primary : theme.textSecondary,
+          }}
+        >
           {label}
         </Text>
       )}
       
       <Animated.View
-        style={animatedStyle}
-        className={`
-          ${getVariantStyles()}
-          rounded-xl px-4 py-3
-          flex-row items-center
-          ${error ? 'border-error' : ''}
-        `}
+        style={[
+          animatedStyle,
+          {
+            borderRadius: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderColor: error ? theme.error : undefined,
+            ...getVariantStyles(),
+          },
+        ]}
       >
         {icon && (
-          <View className="mr-3">
+          <View style={{ marginRight: 12 }}>
             {icon}
           </View>
         )}
@@ -80,19 +101,31 @@ export const Input: React.FC<InputProps> = ({
           {...props}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="flex-1 text-neutral-800 text-base"
-          placeholderTextColor="#a3a3a3"
+          style={{
+            flex: 1,
+            color: theme.text,
+            fontSize: 16,
+          }}
+          placeholderTextColor={theme.inputPlaceholder}
         />
         
         {rightIcon && (
-          <TouchableOpacity onPress={onRightIconPress} className="ml-3">
+          <TouchableOpacity onPress={onRightIconPress} style={{ marginLeft: 12 }}>
             {rightIcon}
           </TouchableOpacity>
         )}
       </Animated.View>
       
       {error && (
-        <Text className="text-error text-sm mt-1">{error}</Text>
+        <Text
+          style={{
+            color: theme.error,
+            fontSize: 14,
+            marginTop: 4,
+          }}
+        >
+          {error}
+        </Text>
       )}
     </View>
   );

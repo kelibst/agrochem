@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -17,6 +18,7 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   variant = 'default',
 }) => {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -38,11 +40,29 @@ export const Card: React.FC<CardProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'elevated':
-        return 'bg-white shadow-lg shadow-neutral-200';
+        return {
+          backgroundColor: theme.cardElevated,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 4,
+        };
       case 'outlined':
-        return 'bg-white border border-neutral-200';
+        return {
+          backgroundColor: theme.card,
+          borderWidth: 1,
+          borderColor: theme.border,
+        };
       default:
-        return 'bg-white shadow-md shadow-neutral-100';
+        return {
+          backgroundColor: theme.card,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+          elevation: 2,
+        };
     }
   };
 
@@ -50,15 +70,17 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <CardComponent
-      style={onPress ? animatedStyle : undefined}
+      style={[
+        onPress ? animatedStyle : undefined,
+        {
+          borderRadius: 16,
+          padding: 16,
+          ...getVariantStyles(),
+        },
+      ]}
       onPress={onPress}
       onPressIn={onPress ? handlePressIn : undefined}
       onPressOut={onPress ? handlePressOut : undefined}
-      className={`
-        ${getVariantStyles()}
-        rounded-2xl p-4
-        ${className}
-      `}
     >
       {children}
     </CardComponent>
@@ -83,34 +105,86 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onPress,
   onAddToCart,
 }) => {
+  const { theme } = useTheme();
+  
   return (
-    <Card onPress={onPress} className="w-44 mx-2">
-      <View className="h-32 bg-neutral-100 rounded-xl mb-3 items-center justify-center">
-        <Text className="text-4xl">🌱</Text>
-      </View>
-      
-      <Text className="text-xs text-primary-600 font-medium mb-1">{category}</Text>
-      <Text className="text-sm font-semibold text-neutral-800 mb-2" numberOfLines={2}>
-        {title}
-      </Text>
-      
-      <View className="flex-row items-center justify-between">
-        <Text className="text-lg font-bold text-primary-600">{price}</Text>
-        <View className="flex-row items-center">
-          <Text className="text-xs text-accent-500 mr-1">⭐</Text>
-          <Text className="text-xs text-neutral-600">{rating.toFixed(1)}</Text>
-        </View>
-      </View>
-      
-      {onAddToCart && (
-        <TouchableOpacity
-          onPress={onAddToCart}
-          className="mt-3 bg-primary-600 rounded-lg py-2 items-center"
+    <View style={{ width: 176, marginHorizontal: 8 }}>
+      <Card onPress={onPress}>
+        <View
+          style={{
+            height: 128,
+            backgroundColor: theme.surfaceVariant,
+            borderRadius: 12,
+            marginBottom: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <Text className="text-white text-sm font-medium">Add to Cart</Text>
-        </TouchableOpacity>
-      )}
-    </Card>
+          <Text style={{ fontSize: 32 }}>🌱</Text>
+        </View>
+        
+        <Text
+          style={{
+            fontSize: 12,
+            color: theme.primary,
+            fontWeight: '500',
+            marginBottom: 4,
+          }}
+        >
+          {category}
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            fontWeight: '600',
+            color: theme.text,
+            marginBottom: 8,
+          }}
+          numberOfLines={2}
+        >
+          {title}
+        </Text>
+        
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              color: theme.primary,
+            }}
+          >
+            {price}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: theme.accent, marginRight: 4 }}>⭐</Text>
+            <Text style={{ fontSize: 12, color: theme.textSecondary }}>{rating.toFixed(1)}</Text>
+          </View>
+        </View>
+        
+        {onAddToCart && (
+          <TouchableOpacity
+            onPress={onAddToCart}
+            style={{
+              marginTop: 12,
+              backgroundColor: theme.primary,
+              borderRadius: 8,
+              paddingVertical: 8,
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                color: theme.onPrimary,
+                fontSize: 14,
+                fontWeight: '500',
+              }}
+            >
+              Add to Cart
+            </Text>
+          </TouchableOpacity>
+        )}
+      </Card>
+    </View>
   );
 };
 
@@ -131,32 +205,74 @@ export const ShopCard: React.FC<ShopCardProps> = ({
   isOpen,
   onPress,
 }) => {
+  const { theme } = useTheme();
+  
   return (
-    <Card onPress={onPress} className="mb-3">
-      <View className="flex-row items-center">
-        <View className="w-16 h-16 bg-primary-100 rounded-xl items-center justify-center mr-4">
-          <Text className="text-2xl">🏪</Text>
-        </View>
-        
-        <View className="flex-1">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-lg font-semibold text-neutral-800">{name}</Text>
-            <View className={`px-2 py-1 rounded-full ${isOpen ? 'bg-success/20' : 'bg-error/20'}`}>
-              <Text className={`text-xs font-medium ${isOpen ? 'text-success' : 'text-error'}`}>
-                {isOpen ? 'Open' : 'Closed'}
-              </Text>
-            </View>
+    <View style={{ marginBottom: 12 }}>
+      <Card onPress={onPress}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View
+            style={{
+              width: 64,
+              height: 64,
+              backgroundColor: theme.primaryContainer,
+              borderRadius: 12,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 16,
+            }}
+          >
+            <Text style={{ fontSize: 24 }}>🏪</Text>
           </View>
           
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-neutral-600">{distance} • {productsCount} products</Text>
-            <View className="flex-row items-center">
-              <Text className="text-accent-500 mr-1">⭐</Text>
-              <Text className="text-sm text-neutral-600">{rating.toFixed(1)}</Text>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: '600',
+                  color: theme.text,
+                }}
+              >
+                {name}
+              </Text>
+              <View
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                  backgroundColor: isOpen ? theme.success + '20' : theme.error + '20',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '500',
+                    color: isOpen ? theme.success : theme.error,
+                  }}
+                >
+                  {isOpen ? 'Open' : 'Closed'}
+                </Text>
+              </View>
+            </View>
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: theme.textSecondary,
+                }}
+              >
+                {distance} • {productsCount} products
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 14, color: theme.accent, marginRight: 4 }}>⭐</Text>
+                <Text style={{ fontSize: 14, color: theme.textSecondary }}>{rating.toFixed(1)}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Card>
+      </Card>
+    </View>
   );
 };

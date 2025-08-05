@@ -3,6 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
+import { ThemeToggle } from '../../components/ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 interface DevMenuScreenProps {
   onNavigate: (screen: string) => void;
@@ -13,6 +15,7 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
   onNavigate,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const screenCategories = [
     {
       title: 'Authentication Screens',
@@ -76,58 +79,108 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Header */}
       <Animated.View 
         entering={FadeInUp.delay(200).duration(800)}
-        className="px-6 pt-4 pb-6 bg-white"
+        style={{ 
+          paddingHorizontal: 24,
+          paddingTop: 16,
+          paddingBottom: 24,
+          backgroundColor: theme.surface,
+        }}
       >
-        <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity onPress={onBack} className="p-2 -ml-2">
-            <Text className="text-2xl">←</Text>
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          marginBottom: 16 
+        }}>
+          <TouchableOpacity onPress={onBack} style={{ padding: 8, marginLeft: -8 }}>
+            <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-primary-800">Developer Menu</Text>
-          <View className="w-10" />
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '600', 
+            color: theme.text 
+          }}>
+            Developer Menu
+          </Text>
+          <ThemeToggle />
         </View>
 
-        <View className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-4">
-          <Text className="text-white text-lg font-semibold mb-2">🚀 AgroConnect Prototype</Text>
-          <Text className="text-primary-100 text-sm">
+        <View style={{
+          backgroundColor: theme.primary,
+          borderRadius: 16,
+          padding: 16,
+        }}>
+          <Text style={{ 
+            color: theme.onPrimary, 
+            fontSize: 18, 
+            fontWeight: '600', 
+            marginBottom: 8 
+          }}>
+            🚀 AgroConnect Prototype
+          </Text>
+          <Text style={{ 
+            color: theme.onPrimary + 'CC', 
+            fontSize: 14 
+          }}>
             Navigate to any screen in the app for development and testing
           </Text>
         </View>
       </Animated.View>
 
       {/* Screen Categories */}
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, paddingHorizontal: 24 }} showsVerticalScrollIndicator={false}>
         {screenCategories.map((category, categoryIndex) => (
           <Animated.View
             key={category.title}
             entering={FadeInDown.delay(300 + categoryIndex * 100).duration(600)}
-            className="mb-6"
+            style={{ marginBottom: 24 }}
           >
-            <View className="flex-row items-center mb-4">
-              <Text className="text-2xl mr-3">{category.icon}</Text>
-              <Text className="text-lg font-bold text-neutral-800">{category.title}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ fontSize: 24, marginRight: 12 }}>{category.icon}</Text>
+              <Text style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                color: theme.text 
+              }}>
+                {category.title}
+              </Text>
             </View>
 
             {category.screens.map((screen, screenIndex) => (
               <Animated.View
                 key={screen.id}
                 entering={FadeInDown.delay(400 + categoryIndex * 100 + screenIndex * 50).duration(600)}
-                className="mb-3"
+                style={{ marginBottom: 12 }}
               >
                 <Card onPress={() => onNavigate(screen.id)}>
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="text-base font-semibold text-neutral-800 mb-1">
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ 
+                        fontSize: 16, 
+                        fontWeight: '600', 
+                        color: theme.text, 
+                        marginBottom: 4 
+                      }}>
                         {screen.name}
                       </Text>
-                      <Text className="text-sm text-neutral-600">
+                      <Text style={{ 
+                        fontSize: 14, 
+                        color: theme.textSecondary 
+                      }}>
                         {screen.description}
                       </Text>
                     </View>
-                    <Text className="text-primary-600 text-xl ml-4">→</Text>
+                    <Text style={{ 
+                      color: theme.primary, 
+                      fontSize: 20, 
+                      marginLeft: 16 
+                    }}>
+                      →
+                    </Text>
                   </View>
                 </Card>
               </Animated.View>
@@ -138,15 +191,32 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
         {/* App Info */}
         <Animated.View 
           entering={FadeInDown.delay(800).duration(800)}
-          className="mb-8"
+          style={{ marginBottom: 32 }}
         >
-          <Card className="bg-primary-50 border border-primary-200">
-            <View className="items-center">
-              <Text className="text-4xl mb-3">🌱</Text>
-              <Text className="text-lg font-bold text-primary-800 mb-2">
+          <Card>
+            <View style={{ 
+              alignItems: 'center',
+              backgroundColor: theme.primaryContainer,
+              borderRadius: 12,
+              padding: 16,
+              marginHorizontal: -16,
+              marginVertical: -16,
+            }}>
+              <Text style={{ fontSize: 32, marginBottom: 12 }}>🌱</Text>
+              <Text style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                color: theme.onPrimaryContainer, 
+                marginBottom: 8 
+              }}>
                 AgroConnect v1.0.0
               </Text>
-              <Text className="text-sm text-primary-600 text-center">
+              <Text style={{ 
+                fontSize: 14, 
+                color: theme.onPrimaryContainer, 
+                textAlign: 'center',
+                opacity: 0.8,
+              }}>
                 Beautiful prototype showcasing the complete agrochemical marketplace experience
               </Text>
             </View>
