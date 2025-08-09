@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { Logo } from '../../components/Logo';
+import { useTheme } from '../../context/ThemeContext';
 
 interface RegisterScreenProps {
   onRegister: (data: RegisterData) => void;
@@ -24,6 +26,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   onLogin,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const [formData, setFormData] = useState<RegisterData>({
     fullName: '',
     email: '',
@@ -84,7 +87,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="flex-1 px-6">
           {/* Header */}
@@ -93,9 +96,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
             className="flex-row items-center justify-between py-4"
           >
             <TouchableOpacity onPress={onBack} className="p-2">
-              <Text className="text-2xl">←</Text>
+              <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
             </TouchableOpacity>
-            <Text className="text-lg font-semibold text-primary-800">Create Account</Text>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text }}>Create Account</Text>
             <View className="w-10" />
           </Animated.View>
 
@@ -104,11 +107,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
             entering={FadeInUp.delay(300).duration(800)}
             className="items-center mb-8"
           >
-            <View className="w-20 h-20 bg-primary-600 rounded-2xl items-center justify-center mb-4">
-              <Text className="text-3xl">🌱</Text>
+            <View className="mb-4">
+              <Logo width={80} height={80} />
             </View>
-            <Text className="text-2xl font-bold text-primary-800 mb-2">Join AgroConnect</Text>
-            <Text className="text-base text-neutral-600 text-center">
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.text, marginBottom: 8 }}>Join AgroConnect</Text>
+            <Text style={{ fontSize: 16, color: theme.textSecondary, textAlign: 'center' }}>
               Create your account to get started
             </Text>
           </Animated.View>

@@ -1,20 +1,57 @@
 {
   "expo": {
-    "scheme": "acme",
+    "name": "AgroConnect",
+    "slug": "agrochem",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "orientation": "default",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kelibst.agrochem"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.kelibst.agrochem",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
+    },
     "web": {
+      "favicon": "./assets/favicon.png",
       "output": "static"
     },
     "plugins": [
+      "expo-router",
       [
-        "expo-router",
+        "expo-splash-screen",
         {
-          "origin": "https://n"
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
         }
       ]
     ],
-    "name": "agrochem",
-    "slug": "agrochem"
+    "scheme": "agrochem",
+    "experiments": {
+      "typedRoutes": true
+    },
+    "updates": {
+      "enabled": false
+    }
   }
 }

@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Button } from '../../components/Button';
+import { Logo } from '../../components/Logo';
 import { useTheme } from '../../context/ThemeContext';
 
 interface WelcomeScreenProps {
@@ -25,13 +26,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             entering={FadeInUp.delay(200).duration(800)}
             className="items-center mb-12"
           >
-            <View className="w-24 h-24 bg-primary-600 rounded-3xl items-center justify-center mb-6 shadow-lg">
-              <Text className="text-4xl">🌱</Text>
+            <View className="mb-6">
+              <Logo width={96} height={96} />
             </View>
-            <Text className="text-3xl font-bold text-primary-800 text-center mb-2">
+            <Text style={{ fontSize: 30, fontWeight: 'bold', color: theme.text, textAlign: 'center', marginBottom: 8 }}>
               AgroConnect
             </Text>
-            <Text className="text-lg text-primary-600 text-center leading-relaxed">
+            <Text style={{ fontSize: 18, color: theme.textSecondary, textAlign: 'center', lineHeight: 26 }}>
               Connecting farmers with agrochemical suppliers for a sustainable future
             </Text>
           </Animated.View>
@@ -89,7 +90,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             entering={FadeInUp.delay(800).duration(800)}
             className="mt-8 items-center"
           >
-            <Text className="text-sm text-primary-500 text-center">
+            <Text style={{ fontSize: 14, color: theme.textTertiary, textAlign: 'center' }}>
               By continuing, you agree to our Terms of Service and Privacy Policy
             </Text>
           </Animated.View>
@@ -105,14 +106,33 @@ interface FeatureItemProps {
   description: string;
 }
 
-const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, description }) => (
-  <View className="flex-row items-center p-4 bg-white/50 rounded-2xl">
-    <View className="w-12 h-12 bg-primary-100 rounded-xl items-center justify-center mr-4">
-      <Text className="text-xl">{icon}</Text>
+const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, description }) => {
+  const { theme } = useTheme();
+  
+  return (
+    <View style={{ 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      padding: 16, 
+      backgroundColor: theme.surface, 
+      borderRadius: 16,
+      marginVertical: 4 
+    }}>
+      <View style={{ 
+        width: 48, 
+        height: 48, 
+        backgroundColor: theme.primaryContainer, 
+        borderRadius: 12, 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        marginRight: 16 
+      }}>
+        <Text style={{ fontSize: 20 }}>{icon}</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 4 }}>{title}</Text>
+        <Text style={{ fontSize: 14, color: theme.textSecondary }}>{description}</Text>
+      </View>
     </View>
-    <View className="flex-1">
-      <Text className="text-lg font-semibold text-primary-800 mb-1">{title}</Text>
-      <Text className="text-sm text-primary-600">{description}</Text>
-    </View>
-  </View>
-);
+  );
+};

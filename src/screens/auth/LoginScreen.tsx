@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { Logo } from '../../components/Logo';
+import { useTheme } from '../../context/ThemeContext';
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => void;
@@ -18,6 +20,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onRegister,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +52,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 px-6">
           {/* Header */}
@@ -58,9 +61,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             className="flex-row items-center justify-between py-4"
           >
             <TouchableOpacity onPress={onBack} className="p-2">
-              <Text className="text-2xl">←</Text>
+              <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
             </TouchableOpacity>
-            <Text className="text-lg font-semibold text-primary-800">Sign In</Text>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text }}>Sign In</Text>
             <View className="w-10" />
           </Animated.View>
 
@@ -69,11 +72,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             entering={FadeInUp.delay(300).duration(800)}
             className="items-center mb-8 mt-8"
           >
-            <View className="w-20 h-20 bg-primary-600 rounded-2xl items-center justify-center mb-4">
-              <Text className="text-3xl">🌱</Text>
+            <View className="mb-4">
+              <Logo width={80} height={80} />
             </View>
-            <Text className="text-2xl font-bold text-primary-800 mb-2">Welcome Back</Text>
-            <Text className="text-base text-neutral-600 text-center">
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.text, marginBottom: 8 }}>Welcome Back</Text>
+            <Text style={{ fontSize: 16, color: theme.textSecondary, textAlign: 'center' }}>
               Sign in to continue to AgroConnect
             </Text>
           </Animated.View>

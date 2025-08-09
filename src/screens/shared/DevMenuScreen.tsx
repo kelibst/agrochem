@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { Logo } from '../../components/Logo';
 import { useTheme } from '../../context/ThemeContext';
 
 interface DevMenuScreenProps {
@@ -113,21 +114,28 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
           backgroundColor: theme.primary,
           borderRadius: 16,
           padding: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
         }}>
-          <Text style={{ 
-            color: theme.onPrimary, 
-            fontSize: 18, 
-            fontWeight: '600', 
-            marginBottom: 8 
-          }}>
-            🚀 AgroConnect Prototype
-          </Text>
-          <Text style={{ 
-            color: theme.onPrimary + 'CC', 
-            fontSize: 14 
-          }}>
-            Navigate to any screen in the app for development and testing
-          </Text>
+          <View style={{ marginRight: 16 }}>
+            <Logo width={48} height={48} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ 
+              color: theme.onPrimary, 
+              fontSize: 18, 
+              fontWeight: '600', 
+              marginBottom: 4 
+            }}>
+              AgroConnect Prototype
+            </Text>
+            <Text style={{ 
+              color: theme.onPrimary + 'CC', 
+              fontSize: 14 
+            }}>
+              Navigate to any screen for development and testing
+            </Text>
+          </View>
         </View>
       </Animated.View>
 
