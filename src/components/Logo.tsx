@@ -25,6 +25,7 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <Image
       source={logoSource}
+      className='rounded-full'
       style={[
         {
           width,

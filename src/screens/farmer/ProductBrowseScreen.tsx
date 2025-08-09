@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SearchInput } from '../../components/Input';
 import { ProductCard, Card } from '../../components/Card';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ProductBrowseScreenProps {
   onProductPress: (productId: string) => void;
@@ -16,6 +17,7 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
   onFilterPress,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState('All');
   const [sortBy, setSortBy] = React.useState('popular');
@@ -42,7 +44,7 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
   const renderProduct = ({ item, index }: { item: typeof products[0], index: number }) => (
     <Animated.View
       entering={FadeInDown.delay(index * 100).duration(600)}
-      className="w-1/2 px-2 mb-4"
+      style={{ width: '50%', paddingHorizontal: 8, marginBottom: 16 }}
     >
       <ProductCard
         title={item.title}
@@ -53,27 +55,36 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
         onAddToCart={item.inStock ? () => {} : undefined}
       />
       {!item.inStock && (
-        <View className="absolute top-2 right-4 bg-error/90 px-2 py-1 rounded-lg">
-          <Text className="text-white text-xs font-medium">Out of Stock</Text>
+        <View style={{
+          position: 'absolute',
+          top: 8,
+          right: 16,
+          backgroundColor: theme.error,
+          opacity: 0.9,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+          borderRadius: 8
+        }}>
+          <Text style={{ color: theme.onError, fontSize: 12, fontWeight: '500' }}>Out of Stock</Text>
         </View>
       )}
     </Animated.View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Header */}
       <Animated.View 
         entering={FadeInUp.delay(200).duration(800)}
-        className="px-6 pt-4 pb-6 bg-white"
+        style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24, backgroundColor: theme.surface }}
       >
-        <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity onPress={onBack} className="p-2 -ml-2">
-            <Text className="text-2xl">←</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <TouchableOpacity onPress={onBack} style={{ padding: 8, marginLeft: -8 }}>
+            <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-primary-800">Browse Products</Text>
-          <TouchableOpacity onPress={onFilterPress} className="p-2">
-            <Text className="text-xl">⚙️</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: theme.primaryDark }}>Browse Products</Text>
+          <TouchableOpacity onPress={onFilterPress} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 20 }}>⚙️</Text>
           </TouchableOpacity>
         </View>
 
@@ -87,15 +98,15 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
       {/* Filter Stats */}
       <Animated.View 
         entering={FadeInDown.delay(300).duration(800)}
-        className="px-6 py-4 bg-white border-t border-neutral-100"
+        style={{ paddingHorizontal: 24, paddingVertical: 16, backgroundColor: theme.surface, borderTopWidth: 1, borderTopColor: theme.border }}
       >
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-neutral-600">
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={{ fontSize: 14, color: theme.textSecondary }}>
             {filteredProducts.length} products found
           </Text>
-          <TouchableOpacity className="flex-row items-center">
-            <Text className="text-sm text-primary-600 mr-1">Sort by: {sortBy}</Text>
-            <Text className="text-primary-600">↕️</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ fontSize: 14, color: theme.primary, marginRight: 4 }}>Sort by: {sortBy}</Text>
+            <Text style={{ color: theme.primary }}>↕️</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -103,25 +114,26 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
       {/* Categories */}
       <Animated.View 
         entering={FadeInDown.delay(400).duration(800)}
-        className="py-4 bg-white"
+        style={{ paddingVertical: 16, backgroundColor: theme.surface }}
       >
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-6">
-          <View className="flex-row space-x-3">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             {categories.map((category) => (
               <TouchableOpacity
                 key={category}
                 onPress={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full ${
-                  selectedCategory === category
-                    ? 'bg-primary-600'
-                    : 'bg-neutral-100'
-                }`}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  backgroundColor: selectedCategory === category ? theme.primary : theme.surfaceVariant
+                }}
               >
-                <Text className={`text-sm font-medium ${
-                  selectedCategory === category
-                    ? 'text-white'
-                    : 'text-neutral-600'
-                }`}>
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: '500',
+                  color: selectedCategory === category ? theme.onPrimary : theme.textSecondary
+                }}>
                   {category}
                 </Text>
               </TouchableOpacity>
@@ -154,10 +166,22 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
       {/* Floating Action Button */}
       <Animated.View 
         entering={FadeInDown.delay(600).duration(800)}
-        className="absolute bottom-6 right-6"
+        style={{ position: 'absolute', bottom: 24, right: 24 }}
       >
-        <TouchableOpacity className="w-14 h-14 bg-primary-600 rounded-full items-center justify-center shadow-lg">
-          <Text className="text-white text-xl">🛒</Text>
+        <TouchableOpacity style={{
+          width: 56,
+          height: 56,
+          backgroundColor: theme.primary,
+          borderRadius: 28,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8,
+        }}>
+          <Text style={{ color: theme.onPrimary, fontSize: 20 }}>🛒</Text>
         </TouchableOpacity>
       </Animated.View>
     </SafeAreaView>

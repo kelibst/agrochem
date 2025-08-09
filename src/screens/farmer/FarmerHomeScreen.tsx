@@ -5,6 +5,7 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SearchInput } from '../../components/Input';
 import { ProductCard, ShopCard, Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FarmerHomeScreenProps {
   onSearchPress: () => void;
@@ -23,13 +24,14 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
   onViewAllProducts,
   onViewAllShops,
 }) => {
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const categories = [
-    { id: '1', name: 'Fertilizers', icon: '🌱', color: 'bg-primary-100' },
-    { id: '2', name: 'Pesticides', icon: '🦗', color: 'bg-accent-100' },
-    { id: '3', name: 'Seeds', icon: '🌰', color: 'bg-secondary-100' },
-    { id: '4', name: 'Tools', icon: '🔨', color: 'bg-info/20' },
+    { id: '1', name: 'Fertilizers', icon: '🌱', color: theme.primaryContainer },
+    { id: '2', name: 'Pesticides', icon: '🦗', color: theme.accentContainer },
+    { id: '3', name: 'Seeds', icon: '🌰', color: theme.secondaryContainer },
+    { id: '4', name: 'Tools', icon: '🔨', color: theme.infoContainer },
   ];
 
   const featuredProducts = [
@@ -45,20 +47,27 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <Animated.View 
           entering={FadeInUp.delay(200).duration(800)}
-          className="px-6 pt-4 pb-6 bg-white"
+          style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}
         >
-          <View className="flex-row items-center justify-between mb-4">
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <View>
-              <Text className="text-2xl font-bold text-primary-800">Good Morning! 👋</Text>
-              <Text className="text-primary-600">Ready to grow your farm?</Text>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primaryDark }}>Good Morning! 👋</Text>
+              <Text style={{ color: theme.primary }}>Ready to grow your farm?</Text>
             </View>
-            <TouchableOpacity className="w-12 h-12 bg-primary-100 rounded-xl items-center justify-center">
-              <Text className="text-xl">🔔</Text>
+            <TouchableOpacity style={{
+              width: 48,
+              height: 48,
+              backgroundColor: theme.primaryContainer,
+              borderRadius: 12,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Text style={{ fontSize: 20 }}>🔔</Text>
             </TouchableOpacity>
           </View>
 
@@ -73,42 +82,59 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
         {/* Weather Card */}
         <Animated.View 
           entering={FadeInDown.delay(300).duration(800)}
-          className="px-6 mb-6"
+          style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          <Card className="bg-gradient-to-r from-primary-500 to-primary-600 p-6">
-            <View className="flex-row items-center justify-between">
+          <View style={{
+            backgroundColor: theme.primary,
+            padding: 24,
+            borderRadius: 12,
+            shadowColor: theme.text,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View>
-                <Text className="text-white text-lg font-semibold mb-1">Today's Weather</Text>
-                <Text className="text-primary-100 text-sm">Perfect for spraying pesticides</Text>
+                <Text style={{ color: theme.onPrimary, fontSize: 18, fontWeight: '600', marginBottom: 4 }}>Today's Weather</Text>
+                <Text style={{ color: theme.onPrimary, opacity: 0.8, fontSize: 14 }}>Perfect for spraying pesticides</Text>
               </View>
-              <View className="items-center">
-                <Text className="text-4xl mb-1">☀️</Text>
-                <Text className="text-white font-bold text-xl">28°C</Text>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 32, marginBottom: 4 }}>☀️</Text>
+                <Text style={{ color: theme.onPrimary, fontWeight: 'bold', fontSize: 20 }}>28°C</Text>
               </View>
             </View>
-          </Card>
+          </View>
         </Animated.View>
 
         {/* Categories */}
         <Animated.View 
           entering={FadeInDown.delay(400).duration(800)}
-          className="mb-6"
+          style={{ marginBottom: 24 }}
         >
-          <View className="flex-row items-center justify-between px-6 mb-4">
-            <Text className="text-lg font-bold text-neutral-800">Categories</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>Categories</Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-6">
-            <View className="flex-row space-x-4">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 24 }}>
+            <View style={{ flexDirection: 'row', gap: 16 }}>
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
                   onPress={() => onCategoryPress(category.name)}
-                  className="items-center"
+                  style={{ alignItems: 'center' }}
                 >
-                  <View className={`w-16 h-16 ${category.color} rounded-2xl items-center justify-center mb-2`}>
-                    <Text className="text-2xl">{category.icon}</Text>
+                  <View style={{
+                    width: 64,
+                    height: 64,
+                    backgroundColor: category.color,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 8
+                  }}>
+                    <Text style={{ fontSize: 24 }}>{category.icon}</Text>
                   </View>
-                  <Text className="text-sm font-medium text-neutral-700 text-center w-20" numberOfLines={2}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: theme.textSecondary, textAlign: 'center', width: 80 }} numberOfLines={2}>
                     {category.name}
                   </Text>
                 </TouchableOpacity>
@@ -120,16 +146,16 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
         {/* Featured Products */}
         <Animated.View 
           entering={FadeInDown.delay(500).duration(800)}
-          className="mb-6"
+          style={{ marginBottom: 24 }}
         >
-          <View className="flex-row items-center justify-between px-6 mb-4">
-            <Text className="text-lg font-bold text-neutral-800">Featured Products</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>Featured Products</Text>
             <TouchableOpacity onPress={onViewAllProducts}>
-              <Text className="text-primary-600 font-medium">View All</Text>
+              <Text style={{ color: theme.primary, fontWeight: '500' }}>View All</Text>
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row pl-6">
+            <View style={{ flexDirection: 'row', paddingLeft: 24 }}>
               {featuredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -148,33 +174,57 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
         {/* Quick Actions */}
         <Animated.View 
           entering={FadeInDown.delay(600).duration(800)}
-          className="px-6 mb-6"
+          style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          <Text className="text-lg font-bold text-neutral-800 mb-4">Quick Actions</Text>
-          <View className="flex-row space-x-4">
-            <View className="flex-1">
-              <Card onPress={() => {}} className="p-4 bg-accent-50">
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">📦</Text>
-                  <Text className="text-sm font-medium text-accent-800">Track Orders</Text>
-                </View>
-              </Card>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 16 }}>Quick Actions</Text>
+          <View style={{ flexDirection: 'row', gap: 16 }}>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity style={{
+                padding: 16,
+                backgroundColor: theme.accentContainer,
+                borderRadius: 12,
+                alignItems: 'center',
+                shadowColor: theme.text,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}>
+                <Text style={{ fontSize: 24, marginBottom: 8 }}>📦</Text>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: theme.onAccentContainer }}>Track Orders</Text>
+              </TouchableOpacity>
             </View>
-            <View className="flex-1">
-              <Card onPress={() => {}} className="p-4 bg-info/10">
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">💬</Text>
-                  <Text className="text-sm font-medium text-info">Messages</Text>
-                </View>
-              </Card>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity style={{
+                padding: 16,
+                backgroundColor: theme.infoContainer,
+                borderRadius: 12,
+                alignItems: 'center',
+                shadowColor: theme.text,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}>
+                <Text style={{ fontSize: 24, marginBottom: 8 }}>💬</Text>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: theme.onInfo }}>Messages</Text>
+              </TouchableOpacity>
             </View>
-            <View className="flex-1">
-              <Card onPress={() => {}} className="p-4 bg-success/10">
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">📍</Text>
-                  <Text className="text-sm font-medium text-success">Find Shops</Text>
-                </View>
-              </Card>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity style={{
+                padding: 16,
+                backgroundColor: theme.successContainer,
+                borderRadius: 12,
+                alignItems: 'center',
+                shadowColor: theme.text,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}>
+                <Text style={{ fontSize: 24, marginBottom: 8 }}>📍</Text>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: theme.onSuccess }}>Find Shops</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Animated.View>
@@ -182,12 +232,12 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
         {/* Nearby Shops */}
         <Animated.View 
           entering={FadeInDown.delay(700).duration(800)}
-          className="px-6 pb-6"
+          style={{ paddingHorizontal: 24, paddingBottom: 24 }}
         >
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold text-neutral-800">Nearby Shops</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>Nearby Shops</Text>
             <TouchableOpacity onPress={onViewAllShops}>
-              <Text className="text-primary-600 font-medium">View All</Text>
+              <Text style={{ color: theme.primary, fontWeight: '500' }}>View All</Text>
             </TouchableOpacity>
           </View>
           {nearbyShops.map((shop) => (

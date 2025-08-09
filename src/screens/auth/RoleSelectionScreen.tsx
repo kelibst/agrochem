@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { useTheme } from '../../context/ThemeContext';
 
 interface RoleSelectionScreenProps {
   onRoleSelect: (role: 'farmer' | 'shop_owner') => void;
@@ -14,6 +15,7 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
   onRoleSelect,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const [selectedRole, setSelectedRole] = React.useState<'farmer' | 'shop_owner' | null>(null);
 
   const handleContinue = () => {
@@ -23,30 +25,53 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gradient-to-br from-primary-50 to-primary-100">
-      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 px-6">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={{ flex: 1, paddingHorizontal: 24, backgroundColor: theme.background }}>
           {/* Header */}
           <Animated.View 
             entering={FadeInUp.delay(200).duration(800)}
-            className="flex-row items-center justify-between py-4"
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingVertical: 16,
+            }}
           >
-            <TouchableOpacity onPress={onBack} className="p-2">
-              <Text className="text-2xl">←</Text>
-            </TouchableOpacity>
-            <Text className="text-lg font-semibold text-primary-800">Choose Your Role</Text>
-            <View className="w-10" />
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: theme.primary,
+              textAlign: 'center',
+            }}>
+              Choose Your Role
+            </Text>
           </Animated.View>
 
           {/* Title */}
           <Animated.View 
             entering={FadeInUp.delay(300).duration(800)}
-            className="items-center mb-12 mt-8"
+            style={{
+              alignItems: 'center',
+              marginBottom: 48,
+              marginTop: 32,
+            }}
           >
-            <Text className="text-2xl font-bold text-primary-800 text-center mb-4">
+            <Text style={{
+              fontSize: 24,
+              fontWeight: 'bold',
+              color: theme.primaryDark,
+              textAlign: 'center',
+              marginBottom: 16,
+            }}>
               How will you use AgroConnect?
             </Text>
-            <Text className="text-base text-primary-600 text-center leading-relaxed">
+            <Text style={{
+              fontSize: 16,
+              color: theme.textSecondary,
+              textAlign: 'center',
+              lineHeight: 24,
+            }}>
               Select your role to customize your experience
             </Text>
           </Animated.View>
@@ -54,7 +79,10 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
           {/* Role Options */}
           <Animated.View 
             entering={FadeInDown.delay(400).duration(800)}
-            className="flex-1 space-y-4"
+            style={{
+              flex: 1,
+              gap: 16,
+            }}
           >
             <RoleCard
               title="I'm a Farmer"
@@ -88,14 +116,13 @@ export const RoleSelectionScreen: React.FC<RoleSelectionScreenProps> = ({
           {/* Continue Button */}
           <Animated.View 
             entering={FadeInDown.delay(600).duration(800)}
-            className="mt-8"
+            style={{ marginTop: 32 }}
           >
             <Button
               title="Continue"
               onPress={handleContinue}
               size="lg"
               disabled={!selectedRole}
-              className={`${!selectedRole ? 'opacity-50' : ''}`}
             />
           </Animated.View>
         </View>
@@ -121,61 +148,88 @@ const RoleCard: React.FC<RoleCardProps> = ({
   isSelected,
   onSelect,
 }) => {
+  const { theme } = useTheme();
+  
   return (
-    <TouchableOpacity onPress={onSelect} className="mb-4">
-      <Card 
-        className={`p-6 ${
-          isSelected 
-            ? 'border-2 border-primary-500 bg-primary-50' 
-            : 'border border-neutral-200 bg-white'
-        }`}
+    <TouchableOpacity onPress={onSelect} style={{ marginBottom: 16 }}>
+      <View 
+        style={{
+          padding: 24,
+          borderWidth: isSelected ? 2 : 1,
+          borderColor: isSelected ? theme.primary : theme.border,
+          backgroundColor: isSelected ? theme.primaryContainer : theme.card,
+          borderRadius: 12,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
       >
-        <View className="flex-row items-start mb-4">
-          <View className={`w-16 h-16 rounded-2xl items-center justify-center mr-4 ${
-            isSelected ? 'bg-primary-100' : 'bg-neutral-100'
-          }`}>
-            <Text className="text-3xl">{icon}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+          <View style={{
+            width: 64,
+            height: 64,
+            borderRadius: 16,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 16,
+            backgroundColor: isSelected ? theme.primaryContainer : theme.surfaceVariant,
+          }}>
+            <Text style={{ fontSize: 24 }}>{icon}</Text>
           </View>
           
-          <View className="flex-1">
-            <Text className={`text-lg font-bold mb-2 ${
-              isSelected ? 'text-primary-800' : 'text-neutral-800'
-            }`}>
+          <View style={{ flex: 1 }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              marginBottom: 8,
+              color: isSelected ? theme.onPrimaryContainer : theme.text,
+            }}>
               {title}
             </Text>
-            <Text className={`text-sm leading-relaxed ${
-              isSelected ? 'text-primary-600' : 'text-neutral-600'
-            }`}>
+            <Text style={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: isSelected ? theme.onPrimaryContainer : theme.textSecondary,
+            }}>
               {description}
             </Text>
           </View>
           
-          <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-            isSelected 
-              ? 'border-primary-500 bg-primary-500' 
-              : 'border-neutral-300 bg-white'
-          }`}>
-            {isSelected && <Text className="text-white text-xs">✓</Text>}
+          <View style={{
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            borderWidth: 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: isSelected ? theme.primary : theme.border,
+            backgroundColor: isSelected ? theme.primary : theme.card,
+          }}>
+            {isSelected && <Text style={{ color: theme.onPrimary, fontSize: 12 }}>✓</Text>}
           </View>
         </View>
 
-        <View className="space-y-2">
+        <View style={{ gap: 8 }}>
           {features.map((feature, index) => (
-            <View key={index} className="flex-row items-center">
-              <Text className={`mr-2 ${
-                isSelected ? 'text-primary-500' : 'text-neutral-400'
-              }`}>
+            <View key={index} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{
+                marginRight: 8,
+                color: isSelected ? theme.primary : theme.textTertiary,
+              }}>
                 ✓
               </Text>
-              <Text className={`text-sm ${
-                isSelected ? 'text-primary-700' : 'text-neutral-600'
-              }`}>
+              <Text style={{
+                fontSize: 14,
+                color: isSelected ? theme.onPrimaryContainer : theme.textSecondary,
+              }}>
                 {feature}
               </Text>
             </View>
           ))}
         </View>
-      </Card>
+      </View>
     </TouchableOpacity>
   );
 };

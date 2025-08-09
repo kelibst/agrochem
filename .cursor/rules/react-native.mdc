@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Avoid using touchable opacity. use pressable instead. so replace all the touchableopacity with pressable when you come into contact with them.

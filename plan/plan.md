@@ -213,3 +213,28 @@ A React Native app connecting farmers with agrochemical shop owners, enabling ea
 - AI-powered product recommendations
 - Bulk ordering features
 - Seasonal planning tools
+
+## Development Guidelines
+
+### Color System & Theming
+The AgroConnect app uses a comprehensive universal theme system with 50+ semantic color variables. See [`color-system-guide.md`](./color-system-guide.md) for complete documentation on:
+
+- **Universal Color Variables**: Single source of truth for all colors
+- **Theme-Aware Design**: Perfect light/dark mode support with automatic switching
+- **Semantic Naming**: Meaningful color names (`theme.star`, `theme.success`, etc.)
+- **Pre-built Utilities**: Ready-to-use style functions and components
+- **Migration Guide**: How to convert from Tailwind/hardcoded colors to theme system
+- **Best Practices**: Proper usage patterns and common pitfalls to avoid
+
+**Key Principles:**
+- ✅ Always use `theme.colorName` instead of hardcoded hex values
+- ✅ Use semantic colors (`theme.star` not `#FFD700`)
+- ✅ Follow container + onContainer pattern for proper contrast
+- ✅ Leverage pre-built styles from `createThemeStyles(theme)`
+- ❌ Never use hardcoded colors or Tailwind classes for colors
+
+### Component Architecture
+- **Theme Integration**: All components must use `useTheme()` hook
+- **Consistent Styling**: Use theme utilities for shadows, borders, and spacing
+- **Type Safety**: Full TypeScript support for all theme colors
+- **Performance**: Optimized re-renders and efficient color calculations

@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { useTheme } from '../../context/ThemeContext';
+import { getStatusColor } from '../../utils/themeUtils';
 
 interface OrdersScreenProps {
   onOrderPress: (orderId: string) => void;
@@ -29,6 +31,7 @@ export const OrdersScreen: React.FC<OrdersScreenProps> = ({
   onReorder,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = React.useState<'active' | 'completed'>('active');
 
   const orders: Order[] = [
@@ -80,14 +83,14 @@ export const OrdersScreen: React.FC<OrdersScreenProps> = ({
     ['delivered', 'cancelled'].includes(order.status)
   );
 
-  const getStatusColor = (status: Order['status']) => {
+  const getStatusStyle = (status: Order['status']) => {
     switch (status) {
-      case 'pending': return 'text-warning bg-warning/20';
-      case 'confirmed': return 'text-info bg-info/20';
-      case 'shipped': return 'text-primary-600 bg-primary-100';
-      case 'delivered': return 'text-success bg-success/20';
-      case 'cancelled': return 'text-error bg-error/20';
-      default: return 'text-neutral-600 bg-neutral-100';
+      case 'pending': return { color: theme.warning, backgroundColor: theme.warningContainer };
+      case 'confirmed': return { color: theme.info, backgroundColor: theme.infoContainer };
+      case 'shipped': return { color: theme.primary, backgroundColor: theme.primaryContainer };
+      case 'delivered': return { color: theme.success, backgroundColor: theme.successContainer };
+      case 'cancelled': return { color: theme.error, backgroundColor: theme.errorContainer };
+      default: return { color: theme.textSecondary, backgroundColor: theme.surfaceVariant };
     }
   };
 
@@ -105,45 +108,65 @@ export const OrdersScreen: React.FC<OrdersScreenProps> = ({
   const displayOrders = activeTab === 'active' ? activeOrders : completedOrders;
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Header */}
       <Animated.View 
         entering={FadeInUp.delay(200).duration(800)}
-        className="px-6 pt-4 pb-6 bg-white"
+        style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24, backgroundColor: theme.surface }}
       >
-        <View className="flex-row items-center justify-between mb-6">
-          <TouchableOpacity onPress={onBack} className="p-2 -ml-2">
-            <Text className="text-2xl">←</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <TouchableOpacity onPress={onBack} style={{ padding: 8, marginLeft: -8 }}>
+            <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-primary-800">My Orders</Text>
-          <TouchableOpacity className="p-2">
-            <Text className="text-xl">🔍</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: theme.primaryDark }}>My Orders</Text>
+          <TouchableOpacity style={{ padding: 8 }}>
+            <Text style={{ fontSize: 20 }}>🔍</Text>
           </TouchableOpacity>
         </View>
 
         {/* Tabs */}
-        <View className="flex-row bg-neutral-100 rounded-xl p-1">
+        <View style={{ flexDirection: 'row', backgroundColor: theme.surfaceVariant, borderRadius: 12, padding: 4 }}>
           <TouchableOpacity
             onPress={() => setActiveTab('active')}
-            className={`flex-1 py-3 rounded-lg ${
-              activeTab === 'active' ? 'bg-white shadow-sm' : ''
-            }`}
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              borderRadius: 8,
+              backgroundColor: activeTab === 'active' ? theme.surface : 'transparent',
+              shadowColor: activeTab === 'active' ? theme.text : 'transparent',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: activeTab === 'active' ? 0.1 : 0,
+              shadowRadius: 2,
+              elevation: activeTab === 'active' ? 2 : 0,
+            }}
           >
-            <Text className={`text-center font-medium ${
-              activeTab === 'active' ? 'text-primary-800' : 'text-neutral-600'
-            }`}>
+            <Text style={{
+              textAlign: 'center',
+              fontWeight: '500',
+              color: activeTab === 'active' ? theme.primaryDark : theme.textSecondary
+            }}>
               Active ({activeOrders.length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setActiveTab('completed')}
-            className={`flex-1 py-3 rounded-lg ${
-              activeTab === 'completed' ? 'bg-white shadow-sm' : ''
-            }`}
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              borderRadius: 8,
+              backgroundColor: activeTab === 'completed' ? theme.surface : 'transparent',
+              shadowColor: activeTab === 'completed' ? theme.text : 'transparent',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: activeTab === 'completed' ? 0.1 : 0,
+              shadowRadius: 2,
+              elevation: activeTab === 'completed' ? 2 : 0,
+            }}
           >
-            <Text className={`text-center font-medium ${
-              activeTab === 'completed' ? 'text-primary-800' : 'text-neutral-600'
-            }`}>
+            <Text style={{
+              textAlign: 'center',
+              fontWeight: '500',
+              color: activeTab === 'completed' ? theme.primaryDark : theme.textSecondary
+            }}>
               Completed ({completedOrders.length})
             </Text>
           </TouchableOpacity>
@@ -151,17 +174,17 @@ export const OrdersScreen: React.FC<OrdersScreenProps> = ({
       </Animated.View>
 
       {/* Orders List */}
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, paddingHorizontal: 24 }} showsVerticalScrollIndicator={false}>
         {displayOrders.length === 0 ? (
           <Animated.View 
             entering={FadeInDown.delay(400).duration(800)}
-            className="items-center justify-center py-20"
+            style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 80 }}
           >
-            <Text className="text-6xl mb-4">📦</Text>
-            <Text className="text-lg font-semibold text-neutral-800 mb-2">
+            <Text style={{ fontSize: 60, marginBottom: 16 }}>📦</Text>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 8 }}>
               No {activeTab} orders
             </Text>
-            <Text className="text-neutral-600 text-center">
+            <Text style={{ color: theme.textSecondary, textAlign: 'center' }}>
               {activeTab === 'active' 
                 ? 'Start shopping to see your orders here'
                 : 'Your completed orders will appear here'
@@ -169,73 +192,82 @@ export const OrdersScreen: React.FC<OrdersScreenProps> = ({
             </Text>
           </Animated.View>
         ) : (
-          displayOrders.map((order, index) => (
+          displayOrders.map((order, index) => {
+            const statusStyle = getStatusStyle(order.status);
+            return (
             <Animated.View
               key={order.id}
               entering={FadeInDown.delay(300 + index * 100).duration(600)}
-              className="mb-4"
+              style={{ marginBottom: 16 }}
             >
               <Card onPress={() => onOrderPress(order.id)}>
-                <View className="flex-row items-start justify-between mb-4">
-                  <View className="flex-1">
-                    <Text className="text-lg font-semibold text-neutral-800 mb-1">
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 4 }}>
                       {order.orderNumber}
                     </Text>
-                    <Text className="text-sm text-neutral-600 mb-2">
+                    <Text style={{ fontSize: 14, color: theme.textSecondary, marginBottom: 8 }}>
                       {order.shopName} • {order.date}
                     </Text>
-                    <View className={`self-start px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
-                      <Text className="text-xs font-medium">
+                    <View style={{
+                      alignSelf: 'flex-start',
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      backgroundColor: statusStyle.backgroundColor
+                    }}>
+                      <Text style={{ fontSize: 12, fontWeight: '500', color: statusStyle.color }}>
                         {getStatusIcon(order.status)} {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </Text>
                     </View>
                   </View>
-                  <View className="items-end">
-                    <Text className="text-lg font-bold text-primary-600 mb-1">
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.primary, marginBottom: 4 }}>
                       {order.total}
                     </Text>
-                    <Text className="text-sm text-neutral-600">
+                    <Text style={{ fontSize: 14, color: theme.textSecondary }}>
                       {order.items} items
                     </Text>
                   </View>
                 </View>
 
                 {order.estimatedDelivery && (
-                  <View className="bg-primary-50 p-3 rounded-xl mb-4">
-                    <Text className="text-sm text-primary-700">
+                  <View style={{ backgroundColor: theme.primaryContainer, padding: 12, borderRadius: 12, marginBottom: 16 }}>
+                    <Text style={{ fontSize: 14, color: theme.onPrimaryContainer }}>
                       🚚 Estimated delivery: {order.estimatedDelivery}
                     </Text>
                   </View>
                 )}
 
-                <View className="flex-row space-x-3">
-                  {activeTab === 'active' ? (
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    {activeTab === 'active' ? (
+                      <Button
+                        title="Track Order"
+                        onPress={() => onTrackOrder(order.id)}
+                        variant="outline"
+                        size="sm"
+                      />
+                    ) : (
+                      <Button
+                        title="Reorder"
+                        onPress={() => onReorder(order.id)}
+                        variant="outline"
+                        size="sm"
+                      />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
                     <Button
-                      title="Track Order"
-                      onPress={() => onTrackOrder(order.id)}
-                      variant="outline"
+                      title="View Details"
+                      onPress={() => onOrderPress(order.id)}
                       size="sm"
-                      className="flex-1"
                     />
-                  ) : (
-                    <Button
-                      title="Reorder"
-                      onPress={() => onReorder(order.id)}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                    />
-                  )}
-                  <Button
-                    title="View Details"
-                    onPress={() => onOrderPress(order.id)}
-                    size="sm"
-                    className="flex-1"
-                  />
+                  </View>
                 </View>
               </Card>
             </Animated.View>
-          ))
+          );})
         )}
       </ScrollView>
     </SafeAreaView>
