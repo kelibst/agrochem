@@ -258,12 +258,12 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.kelibst.agrochem";
-				PRODUCT_NAME = "agrochem";
+				PRODUCT_NAME = "AgroConnect";
 				SWIFT_OBJC_BRIDGING_HEADER = "AgroConnect/AgroConnect-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				CODE_SIGN_ENTITLEMENTS = AgroConnect/AgroConnect.entitlements;
 			};
 			name = Debug;
@@ -287,11 +287,11 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.kelibst.agrochem";
-				PRODUCT_NAME = "agrochem";
+				PRODUCT_NAME = "AgroConnect";
 				SWIFT_OBJC_BRIDGING_HEADER = "AgroConnect/AgroConnect-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				CODE_SIGN_ENTITLEMENTS = AgroConnect/AgroConnect.entitlements;
 			};
 			name = Release;
