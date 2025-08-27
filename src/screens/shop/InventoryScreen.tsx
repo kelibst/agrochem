@@ -5,6 +5,7 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SearchInput } from '../../components/Input';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { useTheme } from '@/context/ThemeContext';
 
 interface InventoryScreenProps {
   onProductPress: (productId: string) => void;
@@ -30,6 +31,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   onEditProductPress,
   onBack,
 }) => {
+  const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedCategory, setSelectedCategory] = React.useState('All');
   const [sortBy, setSortBy] = React.useState('name');
@@ -196,11 +198,11 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
+    <SafeAreaView className="flex-1 bg-neutral-50" style={{ backgroundColor: theme.background }}>
       {/* Header */}
       <Animated.View 
         entering={FadeInUp.delay(200).duration(800)}
-        className="px-6 pt-4 pb-6 bg-white"
+        className="px-6 pt-4 pb-6"
       >
         <View className="flex-row items-center justify-between mb-4">
           <TouchableOpacity onPress={onBack} className="p-2 -ml-2">
@@ -222,7 +224,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       {/* Stats */}
       <Animated.View 
         entering={FadeInDown.delay(300).duration(800)}
-        className="px-6 py-4 bg-white border-t border-neutral-100"
+        className="px-6 py-4 border-t border-neutral-100"
       >
         <View className="flex-row justify-between">
           <View className="items-center">
@@ -243,7 +245,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       {/* Categories */}
       <Animated.View 
         entering={FadeInDown.delay(400).duration(800)}
-        className="py-4 bg-white"
+        className="py-4"
       >
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-6">
           <View className="flex-row space-x-3">

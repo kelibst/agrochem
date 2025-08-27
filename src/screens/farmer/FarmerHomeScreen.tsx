@@ -14,6 +14,10 @@ interface FarmerHomeScreenProps {
   onCategoryPress: (category: string) => void;
   onViewAllProducts: () => void;
   onViewAllShops: () => void;
+  onProfilePress: () => void;
+  onRecommendationsPress: () => void;
+  onOrdersPress: () => void;
+  onCartPress: () => void;
 }
 
 export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
@@ -23,6 +27,10 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
   onCategoryPress,
   onViewAllProducts,
   onViewAllShops,
+  onProfilePress,
+  onRecommendationsPress,
+  onOrdersPress,
+  onCartPress,
 }) => {
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -59,16 +67,34 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
               <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primaryDark }}>Good Morning! 👋</Text>
               <Text style={{ color: theme.primary }}>Ready to grow your farm?</Text>
             </View>
-            <TouchableOpacity style={{
-              width: 48,
-              height: 48,
-              backgroundColor: theme.primaryContainer,
-              borderRadius: 12,
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Text style={{ fontSize: 20 }}>🔔</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity 
+                onPress={onCartPress}
+                style={{
+                  width: 48,
+                  height: 48,
+                  backgroundColor: theme.primaryContainer,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>🛒</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={onProfilePress}
+                style={{
+                  width: 48,
+                  height: 48,
+                  backgroundColor: theme.primaryContainer,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>👤</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <SearchInput
@@ -104,6 +130,47 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
                 <Text style={{ color: theme.onPrimary, fontWeight: 'bold', fontSize: 20 }}>28°C</Text>
               </View>
             </View>
+          </View>
+        </Animated.View>
+
+        {/* Quick Actions */}
+        <Animated.View 
+          entering={FadeInDown.delay(350).duration(800)}
+          style={{ paddingHorizontal: 24, marginBottom: 24 }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 16 }}>Quick Actions</Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity
+              onPress={onRecommendationsPress}
+              style={{
+                flex: 1,
+                backgroundColor: theme.accentContainer,
+                borderRadius: 12,
+                padding: 16,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 24, marginBottom: 8 }}>💡</Text>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: theme.onAccentContainer, textAlign: 'center' }}>
+                Recommendations
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={onOrdersPress}
+              style={{
+                flex: 1,
+                backgroundColor: theme.infoContainer,
+                borderRadius: 12,
+                padding: 16,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 24, marginBottom: 8 }}>📦</Text>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: theme.text, textAlign: 'center' }}>
+                My Orders
+              </Text>
+            </TouchableOpacity>
           </View>
         </Animated.View>
 

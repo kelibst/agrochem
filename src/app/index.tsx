@@ -17,14 +17,19 @@ import { ShopFinderScreen } from "../screens/farmer/ShopFinderScreen";
 import { OrdersScreen } from "../screens/farmer/OrdersScreen";
 import { ShopDashboardScreen } from "../screens/shop/ShopDashboardScreen";
 import { InventoryScreen } from "../screens/shop/InventoryScreen";
+import { AnalyticsScreen } from "../screens/shop/AnalyticsScreen";
+import { AddProductScreen } from "../screens/shop/AddProductScreen";
+import { CustomerManagementScreen } from "../screens/shop/CustomerManagementScreen";
+import { ProfileScreen } from "../screens/farmer/ProfileScreen";
+import { RecommendationsScreen } from "../screens/farmer/RecommendationsScreen";
 import { MessagesScreen } from "../screens/shared/MessagesScreen";
 import { DevMenuScreen } from "../screens/shared/DevMenuScreen";
 import { ComponentShowcaseScreen } from "../screens/shared/ComponentShowcaseScreen";
 
 type ScreenType = 
   | 'entry' | 'welcome' | 'login' | 'register' | 'role-selection'
-  | 'farmer-home' | 'product-browse' | 'product-details' | 'cart' | 'shop-finder' | 'farmer-orders'
-  | 'shop-dashboard' | 'inventory'
+  | 'farmer-home' | 'product-browse' | 'product-details' | 'cart' | 'shop-finder' | 'farmer-orders' | 'farmer-profile' | 'recommendations'
+  | 'shop-dashboard' | 'inventory' | 'analytics' | 'add-product' | 'customer-management'
   | 'farmer-messages' | 'shop-messages'
   | 'dev-menu' | 'component-showcase';
 
@@ -111,6 +116,10 @@ export default function Page() {
             onCategoryPress={(category) => setCurrentScreen('product-browse')}
             onViewAllProducts={() => setCurrentScreen('product-browse')}
             onViewAllShops={() => setCurrentScreen('shop-finder')}
+            onProfilePress={() => setCurrentScreen('farmer-profile')}
+            onRecommendationsPress={() => setCurrentScreen('recommendations')}
+            onOrdersPress={() => setCurrentScreen('farmer-orders')}
+            onCartPress={() => setCurrentScreen('cart')}
           />
         );
 
@@ -176,9 +185,10 @@ export default function Page() {
           <ShopDashboardScreen
             onOrderPress={(id) => console.log('Order pressed:', id)}
             onInventoryPress={() => setCurrentScreen('inventory')}
-            onAnalyticsPress={() => console.log('Analytics pressed')}
+            onAnalyticsPress={() => setCurrentScreen('analytics')}
             onMessagesPress={() => setCurrentScreen('shop-messages')}
-            onAddProductPress={() => console.log('Add product pressed')}
+            onAddProductPress={() => setCurrentScreen('add-product')}
+            onCustomerManagementPress={() => setCurrentScreen('customer-management')}
           />
         );
 
@@ -186,9 +196,52 @@ export default function Page() {
         return (
           <InventoryScreen
             onProductPress={(id) => console.log('Product pressed:', id)}
-            onAddProductPress={() => console.log('Add product pressed')}
+            onAddProductPress={() => setCurrentScreen('add-product')}
             onEditProductPress={(id) => console.log('Edit product:', id)}
             onBack={() => setCurrentScreen('shop-dashboard')}
+          />
+        );
+
+      case 'analytics':
+        return (
+          <AnalyticsScreen
+            onBackPress={() => setCurrentScreen('shop-dashboard')}
+          />
+        );
+
+      case 'add-product':
+        return (
+          <AddProductScreen
+            onBackPress={() => setCurrentScreen('shop-dashboard')}
+            onProductAdded={() => setCurrentScreen('inventory')}
+          />
+        );
+
+      case 'customer-management':
+        return (
+          <CustomerManagementScreen
+            onBackPress={() => setCurrentScreen('shop-dashboard')}
+            onCustomerPress={(customerId) => console.log('Customer pressed:', customerId)}
+          />
+        );
+
+      case 'farmer-profile':
+        return (
+          <ProfileScreen
+            onBackPress={() => setCurrentScreen('farmer-home')}
+            onThemeToggle={() => console.log('Theme toggle - handled by ThemeContext')}
+          />
+        );
+
+      case 'recommendations':
+        return (
+          <RecommendationsScreen
+            onBackPress={() => setCurrentScreen('farmer-home')}
+            onProductPress={(productId) => setCurrentScreen('product-details')}
+            onAddToCart={(productId) => {
+              console.log('Added to cart:', productId);
+              setCurrentScreen('cart');
+            }}
           />
         );
 

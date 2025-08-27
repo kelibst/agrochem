@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ShopDashboardScreenProps {
   onOrderPress: (orderId: string) => void;
@@ -11,6 +12,7 @@ interface ShopDashboardScreenProps {
   onAnalyticsPress: () => void;
   onMessagesPress: () => void;
   onAddProductPress: () => void;
+  onCustomerManagementPress: () => void;
 }
 
 export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
@@ -19,7 +21,9 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
   onAnalyticsPress,
   onMessagesPress,
   onAddProductPress,
+  onCustomerManagementPress,
 }) => {
+  const { theme } = useTheme();
   const todayStats = {
     revenue: '$1,247.50',
     orders: 12,
@@ -39,59 +43,98 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
     { id: '3', name: 'Corn Seeds', stock: 8, minStock: 25 },
   ];
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'pending': return 'text-warning bg-warning/20';
-      case 'confirmed': return 'text-info bg-info/20';
-      case 'shipped': return 'text-primary-600 bg-primary-100';
-      default: return 'text-neutral-600 bg-neutral-100';
+      case 'pending': 
+        return {
+          color: theme.warning,
+          backgroundColor: theme.warningContainer,
+        };
+      case 'confirmed': 
+        return {
+          color: theme.info,
+          backgroundColor: theme.infoContainer,
+        };
+      case 'shipped': 
+        return {
+          color: theme.primary,
+          backgroundColor: theme.primaryContainer,
+        };
+      default: 
+        return {
+          color: theme.textSecondary,
+          backgroundColor: theme.surfaceVariant,
+        };
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <Animated.View 
           entering={FadeInUp.delay(200).duration(800)}
-          className="px-6 pt-4 pb-6 bg-white"
+          style={{
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: 24,
+            backgroundColor: theme.surface,
+          }}
         >
-          <View className="flex-row items-center justify-between mb-4">
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <View>
-              <Text className="text-2xl font-bold text-primary-800">Dashboard 📊</Text>
-              <Text className="text-primary-600">Green Valley Supplies</Text>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.text }}>Dashboard 📊</Text>
+              <Text style={{ color: theme.primary }}>Green Valley Supplies</Text>
             </View>
-            <View className="flex-row space-x-3">
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity 
                 onPress={onMessagesPress}
-                className="w-12 h-12 bg-primary-100 rounded-xl items-center justify-center"
+                style={{
+                  width: 48,
+                  height: 48,
+                  backgroundColor: theme.primaryContainer,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <Text className="text-xl">💬</Text>
+                <Text style={{ fontSize: 20 }}>💬</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="w-12 h-12 bg-primary-100 rounded-xl items-center justify-center">
-                <Text className="text-xl">🔔</Text>
+              <TouchableOpacity style={{
+                width: 48,
+                height: 48,
+                backgroundColor: theme.primaryContainer,
+                borderRadius: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Text style={{ fontSize: 20 }}>🔔</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          <View className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-4">
-            <Text className="text-white text-lg font-semibold mb-2">Today's Performance</Text>
-            <View className="flex-row justify-between">
-              <View className="items-center">
-                <Text className="text-primary-100 text-sm">Revenue</Text>
-                <Text className="text-white font-bold text-lg">{todayStats.revenue}</Text>
+          <View style={{
+            backgroundColor: theme.primary,
+            borderRadius: 16,
+            padding: 16,
+          }}>
+            <Text style={{ color: theme.onPrimary, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Today's Performance</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ color: theme.onPrimary, fontSize: 12, opacity: 0.8 }}>Revenue</Text>
+                <Text style={{ color: theme.onPrimary, fontWeight: 'bold', fontSize: 18 }}>{todayStats.revenue}</Text>
               </View>
-              <View className="items-center">
-                <Text className="text-primary-100 text-sm">Orders</Text>
-                <Text className="text-white font-bold text-lg">{todayStats.orders}</Text>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ color: theme.onPrimary, fontSize: 12, opacity: 0.8 }}>Orders</Text>
+                <Text style={{ color: theme.onPrimary, fontWeight: 'bold', fontSize: 18 }}>{todayStats.orders}</Text>
               </View>
-              <View className="items-center">
-                <Text className="text-primary-100 text-sm">Visitors</Text>
-                <Text className="text-white font-bold text-lg">{todayStats.visitors}</Text>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ color: theme.onPrimary, fontSize: 12, opacity: 0.8 }}>Visitors</Text>
+                <Text style={{ color: theme.onPrimary, fontWeight: 'bold', fontSize: 18 }}>{todayStats.visitors}</Text>
               </View>
-              <View className="items-center">
-                <Text className="text-primary-100 text-sm">Conversion</Text>
-                <Text className="text-white font-bold text-lg">{todayStats.conversion}</Text>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ color: theme.onPrimary, fontSize: 12, opacity: 0.8 }}>Conversion</Text>
+                <Text style={{ color: theme.onPrimary, fontWeight: 'bold', fontSize: 18 }}>{todayStats.conversion}</Text>
               </View>
             </View>
           </View>
@@ -100,33 +143,63 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
         {/* Quick Actions */}
         <Animated.View 
           entering={FadeInDown.delay(300).duration(800)}
-          className="px-6 mb-6"
+          style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          <Text className="text-lg font-bold text-neutral-800 mb-4">Quick Actions</Text>
-          <View className="flex-row space-x-4 mb-4">
-            <View className="flex-1">
-              <Card onPress={onAddProductPress} className="p-4 bg-primary-50">
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">➕</Text>
-                  <Text className="text-sm font-medium text-primary-800">Add Product</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 16 }}>Quick Actions</Text>
+          <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+            <View style={{ flex: 1 }}>
+              <Card onPress={onAddProductPress}>
+                <View style={{ padding: 16, backgroundColor: theme.primaryContainer, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 24, marginBottom: 8 }}>➕</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: theme.onPrimaryContainer }}>Add Product</Text>
                 </View>
               </Card>
             </View>
-            <View className="flex-1">
-              <Card onPress={onInventoryPress} className="p-4 bg-accent-50">
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">📦</Text>
-                  <Text className="text-sm font-medium text-accent-800">Inventory</Text>
+            <View style={{ flex: 1 }}>
+              <Card onPress={onInventoryPress}>
+                <View style={{ padding: 16, backgroundColor: theme.accentContainer, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 24, marginBottom: 8 }}>📦</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: theme.onAccentContainer }}>Inventory</Text>
                 </View>
               </Card>
             </View>
-            <View className="flex-1">
-              <Card onPress={onAnalyticsPress} className="p-4 bg-info/10">
-                <View className="items-center">
-                  <Text className="text-2xl mb-2">📈</Text>
-                  <Text className="text-sm font-medium text-info">Analytics</Text>
+            <View style={{ flex: 1 }}>
+              <Card onPress={onAnalyticsPress}>
+                <View style={{ padding: 16, backgroundColor: theme.infoContainer, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 24, marginBottom: 8 }}>📈</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: theme.text }}>Analytics</Text>
                 </View>
               </Card>
+            </View>
+          </View>
+          
+          <View style={{ flexDirection: 'row', gap: 16 }}>
+            <View style={{ flex: 1 }}>
+              <Card onPress={onCustomerManagementPress}>
+                <View style={{ padding: 16, backgroundColor: theme.successContainer, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 24, marginBottom: 8 }}>👥</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: theme.text }}>Customers</Text>
+                </View>
+              </Card>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Card onPress={onMessagesPress}>
+                <View style={{ padding: 16, backgroundColor: theme.secondaryContainer, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 24, marginBottom: 8 }}>💬</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: theme.text }}>Messages</Text>
+                </View>
+              </Card>
+            </View>
+            <View style={{ flex: 1 }}>
+              {/* Empty space for balance */}
+              <View style={{ opacity: 0 }}>
+                <Card>
+                  <View style={{ padding: 16, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 24, marginBottom: 8 }}> </Text>
+                    <Text style={{ fontSize: 14, fontWeight: '500' }}> </Text>
+                  </View>
+                </Card>
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -134,12 +207,12 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
         {/* Recent Orders */}
         <Animated.View 
           entering={FadeInDown.delay(400).duration(800)}
-          className="px-6 mb-6"
+          style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold text-neutral-800">Recent Orders</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>Recent Orders</Text>
             <TouchableOpacity>
-              <Text className="text-primary-600 font-medium">View All</Text>
+              <Text style={{ color: theme.primary, fontWeight: '500' }}>View All</Text>
             </TouchableOpacity>
           </View>
           
@@ -147,22 +220,28 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
             <Animated.View
               key={order.id}
               entering={FadeInDown.delay(500 + index * 100).duration(600)}
-              className="mb-3"
+              style={{ marginBottom: 12 }}
             >
               <Card onPress={() => onOrderPress(order.id)}>
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1">
-                    <Text className="text-base font-semibold text-neutral-800 mb-1">
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: theme.text, marginBottom: 4 }}>
                       {order.customer}
                     </Text>
-                    <View className="flex-row items-center">
-                      <View className={`px-2 py-1 rounded-full mr-3 ${getStatusColor(order.status)}`}>
-                        <Text className="text-xs font-medium capitalize">{order.status}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        marginRight: 12,
+                        ...getStatusStyle(order.status),
+                      }}>
+                        <Text style={{ fontSize: 12, fontWeight: '500', textTransform: 'capitalize', color: getStatusStyle(order.status).color }}>{order.status}</Text>
                       </View>
-                      <Text className="text-sm text-neutral-600">{order.time}</Text>
+                      <Text style={{ fontSize: 14, color: theme.textSecondary }}>{order.time}</Text>
                     </View>
                   </View>
-                  <Text className="text-lg font-bold text-primary-600">{order.amount}</Text>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.primary }}>{order.amount}</Text>
                 </View>
               </Card>
             </Animated.View>
@@ -172,28 +251,35 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
         {/* Low Stock Alert */}
         <Animated.View 
           entering={FadeInDown.delay(700).duration(800)}
-          className="px-6 mb-6"
+          style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold text-neutral-800">
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
               ⚠️ Low Stock Alert
             </Text>
             <TouchableOpacity onPress={onInventoryPress}>
-              <Text className="text-primary-600 font-medium">Manage</Text>
+              <Text style={{ color: theme.primary, fontWeight: '500' }}>Manage</Text>
             </TouchableOpacity>
           </View>
           
-          <Card className="bg-warning/5 border border-warning/20">
+          <Card>
+            <View style={{ backgroundColor: theme.warningContainer, borderWidth: 1, borderColor: theme.warning, borderRadius: 12, padding: 16 }}>
             {lowStockProducts.map((product, index) => (
               <View 
                 key={product.id}
-                className={`flex-row items-center justify-between py-3 ${
-                  index < lowStockProducts.length - 1 ? 'border-b border-warning/10' : ''
-                }`}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 12,
+                  borderBottomWidth: index < lowStockProducts.length - 1 ? 1 : 0,
+                  borderBottomColor: theme.warning,
+                  opacity: 0.1,
+                }}
               >
                 <View>
-                  <Text className="text-base font-medium text-neutral-800">{product.name}</Text>
-                  <Text className="text-sm text-warning">
+                  <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>{product.name}</Text>
+                  <Text style={{ fontSize: 14, color: theme.warning }}>
                     Only {product.stock} left (Min: {product.minStock})
                   </Text>
                 </View>
@@ -205,6 +291,7 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
                 />
               </View>
             ))}
+            </View>
           </Card>
         </Animated.View>
 

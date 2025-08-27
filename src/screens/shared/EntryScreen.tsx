@@ -22,9 +22,9 @@ import Animated, {
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
-import { Logo } from '../../components/Logo';
-import { Button } from '../../components/Button';
-import { useTheme } from '../../context/ThemeContext';
+import { Logo } from '@/components/Logo';
+import { Button } from '@/components/Button';
+import { useTheme } from '@/context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -222,18 +222,6 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onGetStarted }) => {
               >
                 Your Gateway to Agricultural Excellence
               </Text>
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: theme.textTertiary,
-                  textAlign: 'center',
-                  lineHeight: 24,
-                  paddingHorizontal: 16,
-                }}
-              >
-                Connect farmers with trusted agrochemical suppliers. 
-                Browse products, manage inventory, and grow your agricultural business with confidence.
-              </Text>
             </Animated.View>
 
             {/* Features */}
@@ -303,20 +291,17 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onGetStarted }) => {
         )}
       </View>
 
-      {/* Bottom Decoration */}
+      {/* Bottom Decoration - Changed from absolute to avoid covering content */}
       {showContent && (
         <Animated.View
           entering={SlideInDown.delay(1000).duration(800)}
           style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
+            height: 60,
             backgroundColor: theme.primary,
             opacity: 0.05,
             borderTopLeftRadius: 50,
             borderTopRightRadius: 50,
+            marginTop: 20,
           }}
         />
       )}

@@ -46,7 +46,6 @@ export const ThemedStatusBar: React.FC<ThemedStatusBarProps> = ({
       backgroundColor={backgroundColor}
       translucent={translucent}
       animated={animated}
-      
     />
   );
 };
