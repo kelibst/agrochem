@@ -26,7 +26,7 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
   onMessageShop,
   onLogout,
 }) => {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<FarmerTabType>('home');
 
@@ -120,7 +120,7 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
         return (
           <ProfileScreen
             onBackPress={() => setActiveTab('home')}
-            onThemeToggle={() => {}}
+            onThemeToggle={toggleTheme}
             onLogout={onLogout}
           />
         );

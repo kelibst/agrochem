@@ -10,7 +10,7 @@ import { InventoryScreen } from './InventoryScreen';
 import { AnalyticsScreen } from './AnalyticsScreen';
 import { AddProductScreen } from './AddProductScreen';
 import { CustomerManagementScreen } from './CustomerManagementScreen';
-import { ProfileScreen } from '../farmer/ProfileScreen';
+import { ShopOwnerProfileScreen } from './ShopOwnerProfileScreen';
 
 type ShopTabType = 'dashboard' | 'inventory' | 'analytics' | 'customers' | 'profile';
 
@@ -25,7 +25,7 @@ export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
   onMessageCustomer,
   onLogout,
 }) => {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<ShopTabType>('dashboard');
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -121,9 +121,9 @@ export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
       
       case 'profile':
         return (
-          <ProfileScreen
+          <ShopOwnerProfileScreen
             onBackPress={() => setActiveTab('dashboard')}
-            onThemeToggle={() => {}}
+            onThemeToggle={toggleTheme}
             onLogout={onLogout}
           />
         );
