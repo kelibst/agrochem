@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
+import { Button } from '../../components/Button';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { Logo } from '../../components/Logo';
 import { FirebaseTest } from '../../components/FirebaseTest';
 import { useTheme } from '../../context/ThemeContext';
+import { useNotification } from '../../context/NotificationContext';
+import { DatabaseSeeder } from '../../utils/seedDatabase';
 
 interface DevMenuScreenProps {
   onNavigate: (screen: string) => void;
@@ -18,6 +21,48 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
   onBack,
 }) => {
   const { theme } = useTheme();
+  const { showSuccess, showError, showInfo } = useNotification();
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleSeedDatabase = async () => {
+    setIsSeeding(true);
+    showInfo('Database Seeding', 'Starting to add sample products...');
+    
+    try {
+      const result = await DatabaseSeeder.seedProducts();
+      
+      if (result.success) {
+        showSuccess('Database Seeded!', result.message);
+      } else {
+        showError('Seeding Failed', result.message);
+      }
+    } catch (error: any) {
+      showError('Seeding Error', error.message || 'An unexpected error occurred');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const handleClearDatabase = async () => {
+    setIsClearing(true);
+    showInfo('Clearing Database', 'Removing seeded products...');
+    
+    try {
+      const result = await DatabaseSeeder.clearSeededProducts();
+      
+      if (result.success) {
+        showSuccess('Database Cleared!', result.message);
+      } else {
+        showError('Clear Failed', result.message);
+      }
+    } catch (error: any) {
+      showError('Clear Error', error.message || 'An unexpected error occurred');
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   const screenCategories = [
     {
       title: 'Authentication Screens',
@@ -142,6 +187,70 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
 
       {/* Firebase Test Component */}
       <FirebaseTest />
+
+      {/* Database Management */}
+      <Animated.View 
+        entering={FadeInDown.delay(400).duration(800)}
+        style={{ paddingHorizontal: 24, marginBottom: 24 }}
+      >
+        <Card>
+          <View style={{ marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+              <Text style={{ fontSize: 24, marginRight: 12 }}>🗄️</Text>
+              <Text style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                color: theme.text 
+              }}>
+                Database Management
+              </Text>
+            </View>
+            <Text style={{ 
+              fontSize: 14, 
+              color: theme.textSecondary,
+              marginBottom: 16
+            }}>
+              Add sample products for testing or clear seeded data
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                title={isSeeding ? "Seeding..." : "Seed Database"}
+                onPress={handleSeedDatabase}
+                disabled={isSeeding || isClearing}
+                variant="primary"
+                size="sm"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                title={isClearing ? "Clearing..." : "Clear Seeded"}
+                onPress={handleClearDatabase}
+                disabled={isSeeding || isClearing}
+                variant="outline"
+                size="sm"
+              />
+            </View>
+          </View>
+
+          <View style={{ 
+            marginTop: 12, 
+            paddingTop: 12, 
+            borderTopWidth: 1, 
+            borderTopColor: theme.border 
+          }}>
+            <Text style={{ 
+              fontSize: 12, 
+              color: theme.textSecondary,
+              textAlign: 'center'
+            }}>
+              Adds 4 products per category: Fertilizers, Pesticides, Seeds, Tools
+            </Text>
+          </View>
+        </Card>
+      </Animated.View>
 
       {/* Screen Categories */}
       <ScrollView style={{ flex: 1, paddingHorizontal: 24 }} showsVerticalScrollIndicator={false}>

@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
+import { NotificationProvider } from '../context/NotificationContext';
 import { ThemedStatusBar } from '../components/ThemedStatusBar';
+import { NotificationContainer } from '../components/NotificationContainer';
 import { initializeFirebase, checkFirebaseConfig } from '../config/firebase';
 
 export default function Layout() {
@@ -34,10 +36,13 @@ export default function Layout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <AuthProvider>
-          <ThemedStatusBar />
-          <Slot />
-        </AuthProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <ThemedStatusBar />
+            <Slot />
+            <NotificationContainer />
+          </AuthProvider>
+        </NotificationProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

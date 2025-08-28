@@ -42,16 +42,16 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
   const businessName = shopProfile?.businessName || 'Your Business';
   
   const todayStats = {
-    revenue: '$1,247.50',
+    revenue: 'GHc1,247.50',
     orders: 12,
     visitors: 89,
     conversion: '13.5%'
   };
 
   const recentOrders = [
-    { id: '1', customer: 'John Farmer', amount: '$89.50', status: 'pending', time: '10:30 AM' },
-    { id: '2', customer: 'Sarah Green', amount: '$156.75', status: 'confirmed', time: '09:15 AM' },
-    { id: '3', customer: 'Mike Johnson', amount: '$67.25', status: 'shipped', time: '08:45 AM' },
+    { id: '1', customer: 'John Farmer', amount: 'GHc89.50', status: 'pending', time: '10:30 AM' },
+    { id: '2', customer: 'Sarah Green', amount: 'GHc156.75', status: 'confirmed', time: '09:15 AM' },
+    { id: '3', customer: 'Mike Johnson', amount: 'GHc67.25', status: 'shipped', time: '08:45 AM' },
   ];
 
   // Load products and calculate stats

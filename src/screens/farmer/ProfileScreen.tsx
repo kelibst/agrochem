@@ -56,7 +56,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
   const stats = [
     { label: 'Total Orders', value: '156', icon: '📦' },
-    { label: 'Total Spent', value: '$12,450', icon: '💰' },
+    { label: 'Total Spent', value: 'GHc12,450', icon: '💰' },
     { label: 'Favorite Category', value: 'Fertilizers', icon: '🌾' },
     { label: 'Member Since', value: userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently', icon: '📅' },
   ];

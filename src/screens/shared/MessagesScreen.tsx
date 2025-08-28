@@ -131,7 +131,7 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
       },
       {
         id: '6',
-        text: 'Perfect! Delivery fee is $12.99. Your order has been confirmed and will be delivered tomorrow.',
+        text: 'Perfect! Delivery fee is GHc12.99. Your order has been confirmed and will be delivered tomorrow.',
         timestamp: new Date(Date.now() - 5 * 60 * 1000),
         isFromMe: false,
         status: 'delivered',

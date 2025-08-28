@@ -20,34 +20,34 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
 
   const analytics = {
     week: {
-      revenue: '$1,247.50',
+      revenue: 'GHc1,247.50',
       orders: 12,
       customers: 8,
-      avgOrder: '$103.96',
+      avgOrder: 'GHc103.96',
       growth: '+12%',
     },
     month: {
-      revenue: '$8,456.25',
+      revenue: 'GHc8,456.25',
       orders: 67,
       customers: 34,
-      avgOrder: '$126.21',
+      avgOrder: 'GHc126.21',
       growth: '+18%',
     },
     year: {
-      revenue: '$89,342.75',
+      revenue: 'GHc89,342.75',
       orders: 523,
       customers: 189,
-      avgOrder: '$170.83',
+      avgOrder: 'GHc170.83',
       growth: '+24%',
     },
   };
 
   const topProducts = [
-    { name: 'NPK Fertilizer 20-10-10', sales: 45, revenue: '$2,250' },
-    { name: 'Organic Pesticide Spray', sales: 32, revenue: '$1,920' },
-    { name: 'Corn Seeds Premium', sales: 28, revenue: '$1,680' },
-    { name: 'Soil pH Test Kit', sales: 23, revenue: '$1,150' },
-    { name: 'Growth Hormone', sales: 19, revenue: '$950' },
+    { name: 'NPK Fertilizer 20-10-10', sales: 45, revenue: 'GHc2,250' },
+    { name: 'Organic Pesticide Spray', sales: 32, revenue: 'GHc1,920' },
+    { name: 'Corn Seeds Premium', sales: 28, revenue: 'GHc1,680' },
+    { name: 'Soil pH Test Kit', sales: 23, revenue: 'GHc1,150' },
+    { name: 'Growth Hormone', sales: 19, revenue: 'GHc950' },
   ];
 
   const customerMetrics = [

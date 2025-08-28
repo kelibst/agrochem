@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert } from 'react-native';
+import { View, Text } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { checkFirebaseConfig, firebaseAuth, firebaseFirestore } from '@/config/firebase';
+import { checkFirebaseConfig } from '@/config/firebase';
 
 export const FirebaseTest: React.FC = () => {
   const { theme, styles } = useTheme();
@@ -22,19 +22,18 @@ export const FirebaseTest: React.FC = () => {
       try {
         const status = await checkFirebaseConfig();
         setFirebaseStatus(status);
-        
-        // Test basic Firebase operations
-        console.log('🔥 Firebase Auth instance:', !!firebaseAuth());
-        console.log('🔥 Firebase Firestore instance:', !!firebaseFirestore());
-        console.log('🔥 Auth current user:', firebaseAuth().currentUser?.uid || 'Not authenticated');
-        
-        // Test basic Firestore connection
-        await firebaseFirestore().enableNetwork();
-        console.log('🔥 Firestore network enabled successfully');
-        
+        console.log('🔥 Firebase status check completed:', status);
       } catch (error) {
         console.error('🔥 Firebase test failed:', error);
-        Alert.alert('Firebase Test Failed', String(error));
+        setFirebaseStatus({
+          isConfigured: false,
+          services: {
+            auth: false,
+            firestore: false,
+            storage: false,
+            messaging: false,
+          }
+        });
       }
     };
 
