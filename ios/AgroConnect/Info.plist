@@ -27,8 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>agrochem</string>
-          <string>com.kelibst.agrochem</string>
+          <string>agroconnect</string>
+          <string>com.liliestechzone.agroconnect</string>
         </array>
       </dict>
     </array>

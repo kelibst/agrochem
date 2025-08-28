@@ -8,7 +8,7 @@ This document outlines the comprehensive step-by-step plan for integrating the F
 
 ### **1.1 Firebase Project Creation**
 1. Create new Firebase project in [Firebase Console](https://console.firebase.google.com/)
-2. Register Android app with package name: `com.kelibst.agrochem`
+2. Register Android app with package name: `com.liliestechzone.agrochem`
 3. Register iOS app with bundle ID (to be determined)
 4. Download configuration files:
    - `google-services.json` → `android/app/`

@@ -155,7 +155,7 @@ export function MyComponent() {
 - EAS Build profiles: development, preview (APK), production (AAB)
 
 ### Android/iOS Native
-- Android package: `com.kelibst.agrochem`
+- Android package: `com.liliestechzone.agrochem`
 - Native code in `android/` and `ios/` directories
 - Gradle configuration for Android builds
 

@@ -77,10 +77,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Load user profile from Firestore
   const loadUserProfile = async (uid: string) => {
     try {
+      console.log('🔄 Loading user profile...');
+      
+      // Check Firestore connection first
+      const isConnected = await firestoreService.checkConnection();
+      if (!isConnected) {
+        console.warn('⚠️ Firestore appears to be offline, attempting to load profile anyway...');
+      }
+      
       const profile = await firestoreService.getUserProfile(uid);
-      setUserProfile(profile);
-    } catch (error) {
-      console.error('Failed to load user profile:', error);
+      if (profile) {
+        console.log('✅ User profile loaded successfully');
+        setUserProfile(profile);
+      } else {
+        console.warn('⚠️ User profile not found or unavailable');
+        setUserProfile(null);
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to load user profile:', error);
+      
+      // Handle offline scenarios gracefully
+      if (error.code === 'unavailable' || error.message?.includes('offline')) {
+        console.warn('📱 App is offline - user profile will be loaded when connection is restored');
+      }
+      
       setUserProfile(null);
     }
   };

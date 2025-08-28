@@ -257,7 +257,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.kelibst.agrochem";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.liliestechzone.agroconnect";
 				PRODUCT_NAME = "AgroConnect";
 				SWIFT_OBJC_BRIDGING_HEADER = "AgroConnect/AgroConnect-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -286,7 +286,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.kelibst.agrochem";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.liliestechzone.agroconnect";
 				PRODUCT_NAME = "AgroConnect";
 				SWIFT_OBJC_BRIDGING_HEADER = "AgroConnect/AgroConnect-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

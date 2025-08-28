@@ -1,16 +1,16 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, User } from 'firebase/auth';
-import { getFirestore, Firestore, Timestamp, GeoPoint } from 'firebase/firestore';
+import { initializeAuth, Auth, User } from 'firebase/auth';
+import { Firestore, Timestamp, GeoPoint, initializeFirestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 
-// Firebase configuration (extracted from google-services.json)
+// Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: "REDACTED_API_KEY",
-  authDomain: "agrochem-d25c0.firebaseapp.com",
-  projectId: "agrochem-d25c0",
-  storageBucket: "agrochem-d25c0.firebasestorage.app",
-  messagingSenderId: "891643661690",
-  appId: "1:891643661690:android:74ad55152e9f9fff92dac3"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase app
@@ -25,9 +25,15 @@ export const initializeFirebase = async (): Promise<boolean> => {
     // Initialize Firebase app
     firebaseApp = initializeApp(firebaseConfig);
     
-    // Initialize Firebase services
-    firebaseAuth = getAuth(firebaseApp);
-    firebaseFirestore = getFirestore(firebaseApp);
+    // Initialize Firebase Auth (React Native has built-in persistence)
+    firebaseAuth = initializeAuth(firebaseApp, {});
+    
+    // Initialize Firestore with React Native optimized settings
+    firebaseFirestore = initializeFirestore(firebaseApp, {
+      experimentalForceLongPolling: true, // For React Native
+      experimentalAutoDetectLongPolling: false, // Disable auto-detection
+    });
+    
     firebaseStorage = getStorage(firebaseApp);
     
     console.log('✅ Firebase initialized successfully');
