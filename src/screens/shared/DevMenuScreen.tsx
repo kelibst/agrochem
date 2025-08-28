@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { Logo } from '../../components/Logo';
+import { FirebaseTest } from '../../components/FirebaseTest';
 import { useTheme } from '../../context/ThemeContext';
 
 interface DevMenuScreenProps {
@@ -97,9 +98,9 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
           justifyContent: 'space-between', 
           marginBottom: 16 
         }}>
-          <TouchableOpacity onPress={onBack} style={{ padding: 8, marginLeft: -8 }}>
+          <Pressable onPress={onBack} style={{ padding: 8, marginLeft: -8 }}>
             <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
-          </TouchableOpacity>
+          </Pressable>
           <Text style={{ 
             fontSize: 18, 
             fontWeight: '600', 
@@ -138,6 +139,9 @@ export const DevMenuScreen: React.FC<DevMenuScreenProps> = ({
           </View>
         </View>
       </Animated.View>
+
+      {/* Firebase Test Component */}
+      <FirebaseTest />
 
       {/* Screen Categories */}
       <ScrollView style={{ flex: 1, paddingHorizontal: 24 }} showsVerticalScrollIndicator={false}>

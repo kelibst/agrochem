@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function isShopOwner() {
+      return hasRole('shop_owner');
+    }
+    
+    function isFarmer() {
+      return hasRole('farmer');
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own profile and create it during registration
+      allow read, write: if isOwner(userId);
+      // Allow reading other users' basic profile info (for orders, reviews, etc.)
+      allow read: if isAuthenticated();
+    }
+    
+    // Shops collection
+    match /shops/{shopId} {
+      // Shop owners can create and manage their own shops
+      allow create: if isAuthenticated() && 
+        request.auth.uid == resource.data.ownerId;
+      allow read, update, delete: if isAuthenticated() && 
+        request.auth.uid == resource.data.ownerId;
+      // Anyone can read shop info
+      allow read: if isAuthenticated();
+    }
+    
+    // Products collection
+    match /products/{productId} {
+      // Shop owners can manage products for their shops
+      allow create, update, delete: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/shops/$(resource.data.shopId)) &&
+        get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
+      // Anyone can read products
+      allow read: if isAuthenticated();
+    }
+    
+    // Orders collection
+    match /orders/{orderId} {
+      // Farmers can create orders and read their own orders
+      allow create: if isFarmer() && request.auth.uid == resource.data.farmerId;
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.farmerId || 
+         (exists(/databases/$(database)/documents/shops/$(resource.data.shopId)) &&
+          get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid));
+      // Shop owners can update order status
+      allow update: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/shops/$(resource.data.shopId)) &&
+        get(/databases/$(database)/documents/shops/$(resource.data.shopId)).data.ownerId == request.auth.uid;
+    }
+    
+    // Categories collection
+    match /categories/{categoryId} {
+      // Anyone can read categories
+      allow read: if isAuthenticated();
+      // Only admins can manage categories
+      allow write: if isAdmin();
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      // Users can create and manage their own reviews
+      allow create: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow update, delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      // Anyone can read reviews
+      allow read: if isAuthenticated();
+    }
+
+    // Messages collection
+    match /messages/{messageId} {
+      // Users can create messages they send
+      allow create: if isAuthenticated() && request.auth.uid == resource.data.senderId;
+      // Users can read messages they send or receive
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.senderId || 
+         request.auth.uid == resource.data.receiverId);
+      // Users can update read status of messages they receive
+      allow update: if isAuthenticated() && 
+        request.auth.uid == resource.data.receiverId &&
+        request.writeFields.hasOnly(['isRead']);
+    }
+
+    // Conversations collection
+    match /conversations/{conversationId} {
+      // Users can read conversations they participate in
+      allow read: if isAuthenticated() && 
+        request.auth.uid in resource.data.participantIds;
+      // Users can update unread count for themselves
+      allow update: if isAuthenticated() && 
+        request.auth.uid in resource.data.participantIds;
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      // Users can read and update their own notifications
+      allow read, update: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      // System can create notifications
+      allow create: if isAuthenticated();
+    }
+  }
+}

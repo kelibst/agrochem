@@ -6,6 +6,7 @@ import { SearchInput } from '../../components/Input';
 import { ProductCard, ShopCard, Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface FarmerHomeScreenProps {
   onSearchPress: () => void;
@@ -33,7 +34,11 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
   onCartPress,
 }) => {
   const { theme } = useTheme();
+  const { userProfile } = useAuth();
   const [searchQuery, setSearchQuery] = React.useState('');
+
+  // Get user's first name for greeting
+  const userName = userProfile?.profile?.name?.split(' ')[0] || 'Farmer';
 
   const categories = [
     { id: '1', name: 'Fertilizers', icon: '🌱', color: theme.primaryContainer },
@@ -55,17 +60,22 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'left', 'right']}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <Animated.View 
           entering={FadeInUp.delay(200).duration(800)}
-          style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}
+          style={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24 }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <View>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primaryDark }}>Good Morning! 👋</Text>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primaryDark }}>Good Morning, {userName}! 👋</Text>
               <Text style={{ color: theme.primary }}>Ready to grow your farm?</Text>
+              {userProfile?.profile && 'farmName' in userProfile.profile && userProfile.profile.farmName && (
+                <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 2 }}>
+                  {userProfile.profile.farmName}
+                </Text>
+              )}
             </View>
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity 

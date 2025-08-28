@@ -1,4 +1,4 @@
-package com.kelibst.agrochem
+package com.liliestechzone.agroconnect
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
