@@ -5,6 +5,7 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface ShopDashboardScreenProps {
   onOrderPress: (orderId: string) => void;
@@ -24,6 +25,13 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
   onCustomerManagementPress,
 }) => {
   const { theme } = useTheme();
+  const { userProfile } = useAuth();
+  
+  // Get user data from auth context
+  const shopProfile = userProfile?.profile && 'businessName' in userProfile.profile ? userProfile.profile : null;
+  const shopOwnerName = userProfile?.profile?.name?.split(' ')[0] || 'Shop Owner';
+  const businessName = shopProfile?.businessName || 'Your Business';
+  
   const todayStats = {
     revenue: '$1,247.50',
     orders: 12,
@@ -83,8 +91,13 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <View>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.text }}>Dashboard 📊</Text>
-              <Text style={{ color: theme.primary }}>Green Valley Supplies</Text>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primaryDark }}>Good day, {shopOwnerName}! 👋</Text>
+              <Text style={{ color: theme.primary }}>{businessName}</Text>
+              {shopProfile?.address && (
+                <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 2 }}>
+                  {shopProfile.address}
+                </Text>
+              )}
             </View>
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity 

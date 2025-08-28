@@ -224,7 +224,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onGetStarted }) => {
               </Text>
             </Animated.View>
 
-            {/* Features */}
+            {/* Features
             <Animated.View
               entering={FadeInUp.delay(600).duration(800)}
               style={{ alignItems: 'center', marginBottom: 48 }}
@@ -262,7 +262,7 @@ export const EntryScreen: React.FC<EntryScreenProps> = ({ onGetStarted }) => {
                   </Animated.View>
                 ))}
               </View>
-            </Animated.View>
+            </Animated.View> */}
 
             {/* Get Started Button */}
             <Animated.View

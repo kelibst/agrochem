@@ -128,15 +128,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <View className="flex-1 h-px bg-neutral-200" />
             </View>
 
-            <Button
-              title="Sign in with Google"
-              onPress={() => {}}
-              variant="outline"
-              size="lg"
-              icon="🔍"
-              className="mb-4"
-            />
-
+            
             <View className="flex-row justify-center">
               <Text className="text-neutral-600">Don't have an account? </Text>
               <TouchableOpacity onPress={onRegister}>
