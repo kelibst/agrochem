@@ -1,11 +1,12 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { productService, Product } from '../../services/ProductService';
 
 interface ShopDashboardScreenProps {
   onOrderPress: (orderId: string) => void;
@@ -25,7 +26,15 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
   onCustomerManagementPress,
 }) => {
   const { theme } = useTheme();
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    activeProducts: 0,
+    lowStockCount: 0,
+    outOfStockCount: 0,
+  });
   
   // Get user data from auth context
   const shopProfile = userProfile?.profile && 'businessName' in userProfile.profile ? userProfile.profile : null;
@@ -45,11 +54,38 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
     { id: '3', customer: 'Mike Johnson', amount: '$67.25', status: 'shipped', time: '08:45 AM' },
   ];
 
-  const lowStockProducts = [
-    { id: '1', name: 'NPK Fertilizer', stock: 5, minStock: 20 },
-    { id: '2', name: 'Organic Pesticide', stock: 2, minStock: 15 },
-    { id: '3', name: 'Corn Seeds', stock: 8, minStock: 25 },
-  ];
+  // Load products and calculate stats
+  useEffect(() => {
+    if (user && userProfile?.role === 'shop_owner') {
+      loadProductStats();
+    }
+  }, [user, userProfile]);
+
+  const loadProductStats = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedProducts = await productService.getShopProducts(user!.uid);
+      setProducts(fetchedProducts);
+      
+      // Calculate statistics
+      const activeProducts = fetchedProducts.filter(p => p.isActive);
+      const lowStockProducts = fetchedProducts.filter(p => p.stock > 0 && p.stock <= 10);
+      const outOfStockProducts = fetchedProducts.filter(p => p.stock === 0);
+      
+      setStats({
+        totalProducts: fetchedProducts.length,
+        activeProducts: activeProducts.length,
+        lowStockCount: lowStockProducts.length,
+        outOfStockCount: outOfStockProducts.length,
+      });
+    } catch (error) {
+      console.error('Error loading product stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 10).slice(0, 3);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -261,87 +297,142 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
           ))}
         </Animated.View>
 
-        {/* Low Stock Alert */}
+        {/* Product Statistics */}
         <Animated.View 
-          entering={FadeInDown.delay(700).duration(800)}
+          entering={FadeInDown.delay(600).duration(800)}
           style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
-              ⚠️ Low Stock Alert
-            </Text>
-            <TouchableOpacity onPress={onInventoryPress}>
-              <Text style={{ color: theme.primary, fontWeight: '500' }}>Manage</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <Card>
-            <View style={{ backgroundColor: theme.warningContainer, borderWidth: 1, borderColor: theme.warning, borderRadius: 12, padding: 16 }}>
-            {lowStockProducts.map((product, index) => (
-              <View 
-                key={product.id}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 12,
-                  borderBottomWidth: index < lowStockProducts.length - 1 ? 1 : 0,
-                  borderBottomColor: theme.warning,
-                  opacity: 0.1,
-                }}
-              >
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>{product.name}</Text>
-                  <Text style={{ fontSize: 14, color: theme.warning }}>
-                    Only {product.stock} left (Min: {product.minStock})
-                  </Text>
-                </View>
-                <Button
-                  title="Restock"
-                  onPress={() => {}}
-                  variant="outline"
-                  size="sm"
-                />
-              </View>
-            ))}
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 16 }}>Product Overview</Text>
+          {isLoading ? (
+            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+              <ActivityIndicator size="large" color={theme.primary} />
+              <Text style={{ color: theme.textSecondary, marginTop: 12 }}>Loading product data...</Text>
             </View>
-          </Card>
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+              <View style={{ flex: 1 }}>
+                <Card>
+                  <View style={{ padding: 16, alignItems: 'center', backgroundColor: theme.primaryContainer }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primary, marginBottom: 4 }}>{stats.totalProducts}</Text>
+                    <Text style={{ fontSize: 12, color: theme.text, textAlign: 'center' }}>Total Products</Text>
+                  </View>
+                </Card>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Card>
+                  <View style={{ padding: 16, alignItems: 'center', backgroundColor: theme.successContainer }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.success, marginBottom: 4 }}>{stats.activeProducts}</Text>
+                    <Text style={{ fontSize: 12, color: theme.text, textAlign: 'center' }}>Active Products</Text>
+                  </View>
+                </Card>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Card>
+                  <View style={{ padding: 16, alignItems: 'center', backgroundColor: theme.warningContainer }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.warning, marginBottom: 4 }}>{stats.lowStockCount}</Text>
+                    <Text style={{ fontSize: 12, color: theme.text, textAlign: 'center' }}>Low Stock</Text>
+                  </View>
+                </Card>
+              </View>
+            </View>
+          )}
         </Animated.View>
 
-        {/* Weekly Summary */}
-        <Animated.View 
-          entering={FadeInDown.delay(800).duration(800)}
-          className="px-6 pb-6"
-        >
-          <Text className="text-lg font-bold text-neutral-800 mb-4">This Week</Text>
-          <Card>
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-base font-medium text-neutral-800">Weekly Summary</Text>
-              <TouchableOpacity onPress={onAnalyticsPress}>
-                <Text className="text-primary-600 font-medium">View Details</Text>
+        {/* Low Stock Alert */}
+        {!isLoading && lowStockProducts.length > 0 && (
+          <Animated.View 
+            entering={FadeInDown.delay(700).duration(800)}
+            style={{ paddingHorizontal: 24, marginBottom: 24 }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>
+                ⚠️ Low Stock Alert
+              </Text>
+              <TouchableOpacity onPress={onInventoryPress}>
+                <Text style={{ color: theme.primary, fontWeight: '500' }}>Manage</Text>
               </TouchableOpacity>
             </View>
             
-            <View className="space-y-3">
-              <View className="flex-row justify-between">
-                <Text className="text-neutral-600">Total Revenue</Text>
-                <Text className="font-semibold text-neutral-800">$8,456.25</Text>
+            <Card>
+              <View style={{ backgroundColor: theme.warningContainer, borderWidth: 1, borderColor: theme.warning, borderRadius: 12, padding: 16 }}>
+              {lowStockProducts.map((product, index) => (
+                <View 
+                  key={product.id}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 12,
+                    borderBottomWidth: index < lowStockProducts.length - 1 ? 1 : 0,
+                    borderBottomColor: theme.border,
+                  }}
+                >
+                  <View>
+                    <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>{product.name}</Text>
+                    <Text style={{ fontSize: 14, color: theme.warning }}>
+                      Only {product.stock} left • ${product.price.toFixed(2)} per {product.unit}
+                    </Text>
+                  </View>
+                  <Button
+                    title="Update"
+                    onPress={() => onInventoryPress()}
+                    variant="outline"
+                    size="sm"
+                  />
+                </View>
+              ))}
               </View>
-              <View className="flex-row justify-between">
-                <Text className="text-neutral-600">Orders Completed</Text>
-                <Text className="font-semibold text-neutral-800">67</Text>
+            </Card>
+          </Animated.View>
+        )}
+
+        {/* Product Categories Summary */}
+        {!isLoading && products.length > 0 && (
+          <Animated.View 
+            entering={FadeInDown.delay(800).duration(800)}
+            style={{ paddingHorizontal: 24, paddingBottom: 24 }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 16 }}>Product Categories</Text>
+            <Card>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>Category Breakdown</Text>
+                <TouchableOpacity onPress={onInventoryPress}>
+                  <Text style={{ color: theme.primary, fontWeight: '500' }}>View All</Text>
+                </TouchableOpacity>
               </View>
-              <View className="flex-row justify-between">
-                <Text className="text-neutral-600">New Customers</Text>
-                <Text className="font-semibold text-neutral-800">12</Text>
+              
+              <View style={{ gap: 12 }}>
+                {['Fertilizers', 'Pesticides', 'Seeds', 'Tools'].map((category) => {
+                  const categoryProducts = products.filter(p => p.category === category);
+                  const totalValue = categoryProducts.reduce((sum, p) => sum + (p.price * p.stock), 0);
+                  
+                  if (categoryProducts.length === 0) return null;
+                  
+                  return (
+                    <View key={category} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View>
+                        <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>{category}</Text>
+                        <Text style={{ fontSize: 14, color: theme.textSecondary }}>
+                          {categoryProducts.length} products • ${totalValue.toFixed(2)} inventory value
+                        </Text>
+                      </View>
+                      <View style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        backgroundColor: theme.primaryContainer,
+                        borderRadius: 16,
+                      }}>
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: theme.primary }}>
+                          {categoryProducts.filter(p => p.isActive).length} active
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
               </View>
-              <View className="flex-row justify-between">
-                <Text className="text-neutral-600">Average Order Value</Text>
-                <Text className="font-semibold text-neutral-800">$126.21</Text>
-              </View>
-            </View>
-          </Card>
-        </Animated.View>
+            </Card>
+          </Animated.View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

@@ -6,6 +6,8 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { productService, CATEGORIES } from '../../services/ProductService';
 
 interface AddProductScreenProps {
   onBackPress: () => void;
@@ -17,6 +19,8 @@ export const AddProductScreen: React.FC<AddProductScreenProps> = ({
   onProductAdded,
 }) => {
   const { theme } = useTheme();
+  const { user, userProfile } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -30,10 +34,7 @@ export const AddProductScreen: React.FC<AddProductScreenProps> = ({
     safetyPeriod: '',
   });
 
-  const categories = [
-    'Fertilizers', 'Pesticides', 'Herbicides', 'Fungicides', 
-    'Seeds', 'Growth Regulators', 'Soil Amendments', 'Equipment'
-  ];
+  const categories = CATEGORIES;
 
   const units = ['kg', 'liter', 'piece', 'bag', 'bottle', 'pack'];
 
@@ -41,20 +42,57 @@ export const AddProductScreen: React.FC<AddProductScreenProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate required fields
     if (!formData.name || !formData.price || !formData.category || !formData.stock) {
       Alert.alert('Missing Information', 'Please fill in all required fields.');
       return;
     }
 
-    // Mock save - in real app, this would save to backend
-    console.log('Saving product:', formData);
-    Alert.alert(
-      'Product Added',
-      `${formData.name} has been added to your inventory.`,
-      [{ text: 'OK', onPress: onProductAdded }]
-    );
+    // Validate user authentication
+    if (!user || !userProfile) {
+      Alert.alert('Authentication Error', 'Please log in to add products.');
+      return;
+    }
+
+    // Validate user is a shop owner
+    if (userProfile.role !== 'shop_owner') {
+      Alert.alert('Permission Error', 'Only shop owners can add products.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const productData = {
+        shopId: user.uid,
+        shopName: userProfile.role === 'shop_owner' ? (userProfile.profile as any).businessName || (userProfile.profile as any).name : (userProfile.profile as any).name,
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        unit: formData.unit,
+        isActive: true,
+      };
+
+      await productService.addProduct(productData);
+      
+      Alert.alert(
+        'Product Added',
+        `${formData.name} has been added to your inventory.`,
+        [{ text: 'OK', onPress: onProductAdded }]
+      );
+    } catch (error) {
+      console.error('Error saving product:', error);
+      Alert.alert(
+        'Error',
+        'Failed to save product. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const CategorySelector = () => (
@@ -281,10 +319,11 @@ export const AddProductScreen: React.FC<AddProductScreenProps> = ({
         >
           <View style={{ gap: 12 }}>
             <Button
-              title="💾 Save Product"
+              title={isLoading ? "💾 Saving..." : "💾 Save Product"}
               onPress={handleSave}
               variant="primary"
               size="lg"
+              disabled={isLoading}
             />
             <Button
               title="Cancel"

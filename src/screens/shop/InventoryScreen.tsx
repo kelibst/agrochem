@@ -1,29 +1,22 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SearchInput } from '../../components/Input';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { productService, Product, CATEGORIES } from '../../services/ProductService';
 
 interface InventoryScreenProps {
   onProductPress: (productId: string) => void;
   onAddProductPress: () => void;
-  onEditProductPress: (productId: string) => void;
+  onEditProductPress: (productId: string, product: Product) => void;
   onBack: () => void;
 }
 
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: string;
-  stock: number;
-  minStock: number;
-  status: 'in_stock' | 'low_stock' | 'out_of_stock';
-  sales: number;
-}
+// Remove local Product interface - using the one from ProductService
 
 export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   onProductPress,
@@ -32,64 +25,66 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   onBack,
 }) => {
   const { theme } = useTheme();
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedCategory, setSelectedCategory] = React.useState('All');
-  const [sortBy, setSortBy] = React.useState('name');
+  const { user, userProfile } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('name');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const categories = ['All', 'Fertilizers', 'Pesticides', 'Seeds', 'Tools'];
+  const categories = ['All', ...CATEGORIES];
   
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'NPK Fertilizer Premium',
-      category: 'Fertilizers',
-      price: '$45.99',
-      stock: 5,
-      minStock: 20,
-      status: 'low_stock',
-      sales: 156
-    },
-    {
-      id: '2',
-      name: 'Organic Pesticide Spray',
-      category: 'Pesticides',
-      price: '$28.50',
-      stock: 45,
-      minStock: 15,
-      status: 'in_stock',
-      sales: 89
-    },
-    {
-      id: '3',
-      name: 'Hybrid Corn Seeds',
-      category: 'Seeds',
-      price: '$35.00',
-      stock: 0,
-      minStock: 25,
-      status: 'out_of_stock',
-      sales: 67
-    },
-    {
-      id: '4',
-      name: 'Potassium Sulfate',
-      category: 'Fertilizers',
-      price: '$52.00',
-      stock: 32,
-      minStock: 10,
-      status: 'in_stock',
-      sales: 234
-    },
-    {
-      id: '5',
-      name: 'Garden Hose 50ft',
-      category: 'Tools',
-      price: '$89.99',
-      stock: 8,
-      minStock: 5,
-      status: 'in_stock',
-      sales: 23
-    },
-  ];
+  // Load products from Firebase
+  useEffect(() => {
+    if (user && userProfile?.role === 'shop_owner') {
+      loadProducts();
+    }
+  }, [user, userProfile]);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const fetchedProducts = await productService.getShopProducts(user!.uid);
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setError('Failed to load products. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    Alert.alert(
+      'Delete Product',
+      `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await productService.deleteProduct(productId);
+              setProducts(prev => prev.filter(p => p.id !== productId));
+              Alert.alert('Success', 'Product deleted successfully.');
+            } catch (error) {
+              console.error('Error deleting product:', error);
+              Alert.alert('Error', 'Failed to delete product. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const getProductStatus = (stock: number): 'in_stock' | 'low_stock' | 'out_of_stock' => {
+    if (stock === 0) return 'out_of_stock';
+    if (stock <= 10) return 'low_stock'; // Consider low stock if <= 10 items
+    return 'in_stock';
+  };
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -97,16 +92,16 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
     return matchesSearch && matchesCategory;
   });
 
-  const getStatusColor = (status: Product['status']) => {
+  const getStatusColor = (status: 'in_stock' | 'low_stock' | 'out_of_stock') => {
     switch (status) {
-      case 'in_stock': return 'text-success bg-success/20';
-      case 'low_stock': return 'text-warning bg-warning/20';
-      case 'out_of_stock': return 'text-error bg-error/20';
-      default: return 'text-neutral-600 bg-neutral-100';
+      case 'in_stock': return { color: theme.success, backgroundColor: theme.success + '33' };
+      case 'low_stock': return { color: theme.warning, backgroundColor: theme.warning + '33' };
+      case 'out_of_stock': return { color: theme.error, backgroundColor: theme.error + '33' };
+      default: return { color: theme.textSecondary, backgroundColor: theme.surfaceVariant };
     }
   };
 
-  const getStatusText = (status: Product['status']) => {
+  const getStatusText = (status: 'in_stock' | 'low_stock' | 'out_of_stock') => {
     switch (status) {
       case 'in_stock': return 'In Stock';
       case 'low_stock': return 'Low Stock';
@@ -116,101 +111,82 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
   };
 
   const totalProducts = products.length;
-  const lowStockCount = products.filter(p => p.status === 'low_stock').length;
-  const outOfStockCount = products.filter(p => p.status === 'out_of_stock').length;
+  const lowStockCount = products.filter(p => getProductStatus(p.stock) === 'low_stock').length;
+  const outOfStockCount = products.filter(p => getProductStatus(p.stock) === 'out_of_stock').length;
 
-  const renderProduct = ({ item, index }: { item: Product, index: number }) => (
-    <Animated.View
-      entering={FadeInDown.delay(index * 100).duration(600)}
-      className="mb-4"
-    >
-      <Card onPress={() => onProductPress(item.id)}>
-        <View className="flex-row items-start justify-between mb-3">
-          <View className="flex-1">
-            <Text className="text-lg font-semibold text-neutral-800 mb-1">
-              {item.name}
-            </Text>
-            <Text className="text-sm text-neutral-600 mb-2">
-              {item.category}
-            </Text>
-            <View className={`self-start px-2 py-1 rounded-full ${getStatusColor(item.status)}`}>
-              <Text className="text-xs font-medium">
-                {getStatusText(item.status)}
+  const renderProduct = ({ item, index }: { item: Product, index: number }) => {
+    const status = getProductStatus(item.stock);
+    const statusStyle = getStatusColor(status);
+    
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(index * 100).duration(600)}
+        style={{ marginBottom: 16 }}
+      >
+        <Card onPress={() => onProductPress(item.id)}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 4 }}>
+                {item.name}
+              </Text>
+              <Text style={{ fontSize: 14, color: theme.textSecondary, marginBottom: 8 }}>
+                {item.category} • {item.unit}
+              </Text>
+              <View style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderRadius: 12,
+                ...statusStyle
+              }}>
+                <Text style={{ fontSize: 12, fontWeight: '500', color: statusStyle.color }}>
+                  {getStatusText(status)}
+                </Text>
+              </View>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.primary, marginBottom: 4 }}>
+                ${item.price.toFixed(2)}
+              </Text>
+              <Text style={{ fontSize: 14, color: theme.textSecondary }}>
+                Stock: {item.stock}
               </Text>
             </View>
           </View>
-          <View className="items-end">
-            <Text className="text-lg font-bold text-primary-600 mb-1">
-              {item.price}
-            </Text>
-            <Text className="text-sm text-neutral-600">
-              {item.sales} sold
-            </Text>
-          </View>
-        </View>
 
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="flex-1">
-            <Text className="text-sm text-neutral-600 mb-1">Stock Level</Text>
-            <View className="flex-row items-center">
-              <Text className={`text-base font-semibold ${
-                item.status === 'out_of_stock' ? 'text-error' :
-                item.status === 'low_stock' ? 'text-warning' : 'text-success'
-              }`}>
-                {item.stock}
-              </Text>
-              <Text className="text-sm text-neutral-500 ml-2">
-                / Min: {item.minStock}
-              </Text>
-            </View>
-          </View>
-          
-          <View className="w-24 h-2 bg-neutral-200 rounded-full overflow-hidden">
-            <View 
-              className={`h-full rounded-full ${
-                item.status === 'out_of_stock' ? 'bg-error' :
-                item.status === 'low_stock' ? 'bg-warning' : 'bg-success'
-              }`}
-              style={{ 
-                width: `${Math.min((item.stock / (item.minStock * 2)) * 100, 100)}%` 
-              }}
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+            <Button
+              title="✏️ Edit"
+              onPress={() => onEditProductPress(item.id, item)}
+              variant="outline"
+              size="sm"
+            />
+            <Button
+              title="🗑️ Delete"
+              onPress={() => handleDeleteProduct(item.id, item.name)}
+              variant="outline"
+              size="sm"
             />
           </View>
-        </View>
-
-        <View className="flex-row space-x-3">
-          <Button
-            title="Edit"
-            onPress={() => onEditProductPress(item.id)}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          />
-          <Button
-            title={item.status === 'out_of_stock' ? 'Restock' : 'Update Stock'}
-            onPress={() => {}}
-            size="sm"
-            className="flex-1"
-          />
-        </View>
-      </Card>
-    </Animated.View>
-  );
+        </Card>
+      </Animated.View>
+    );
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50" style={{ backgroundColor: theme.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Header */}
       <Animated.View 
         entering={FadeInUp.delay(200).duration(800)}
-        className="px-6 pt-4 pb-6"
+        style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24, backgroundColor: theme.surface }}
       >
-        <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity onPress={onBack} className="p-2 -ml-2">
-            <Text className="text-2xl">←</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <TouchableOpacity onPress={onBack} style={{ padding: 8, marginLeft: -8 }}>
+            <Text style={{ fontSize: 24, color: theme.text }}>←</Text>
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-primary-800">Inventory</Text>
-          <TouchableOpacity onPress={onAddProductPress} className="p-2">
-            <Text className="text-xl">➕</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: theme.primaryDark }}>Inventory Management</Text>
+          <TouchableOpacity onPress={onAddProductPress} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 20 }}>➕</Text>
           </TouchableOpacity>
         </View>
 
@@ -224,20 +200,20 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       {/* Stats */}
       <Animated.View 
         entering={FadeInDown.delay(300).duration(800)}
-        className="px-6 py-4 border-t border-neutral-100"
+        style={{ paddingHorizontal: 24, paddingVertical: 16, backgroundColor: theme.surface, borderTopWidth: 1, borderTopColor: theme.border }}
       >
-        <View className="flex-row justify-between">
-          <View className="items-center">
-            <Text className="text-2xl font-bold text-primary-600">{totalProducts}</Text>
-            <Text className="text-sm text-neutral-600">Total Products</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.primary }}>{totalProducts}</Text>
+            <Text style={{ fontSize: 14, color: theme.textSecondary }}>Total Products</Text>
           </View>
-          <View className="items-center">
-            <Text className="text-2xl font-bold text-warning">{lowStockCount}</Text>
-            <Text className="text-sm text-neutral-600">Low Stock</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.warning }}>{lowStockCount}</Text>
+            <Text style={{ fontSize: 14, color: theme.textSecondary }}>Low Stock</Text>
           </View>
-          <View className="items-center">
-            <Text className="text-2xl font-bold text-error">{outOfStockCount}</Text>
-            <Text className="text-sm text-neutral-600">Out of Stock</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: theme.error }}>{outOfStockCount}</Text>
+            <Text style={{ fontSize: 14, color: theme.textSecondary }}>Out of Stock</Text>
           </View>
         </View>
       </Animated.View>
@@ -245,25 +221,26 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       {/* Categories */}
       <Animated.View 
         entering={FadeInDown.delay(400).duration(800)}
-        className="py-4"
+        style={{ paddingVertical: 16, backgroundColor: theme.surface }}
       >
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-6">
-          <View className="flex-row space-x-3">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             {categories.map((category) => (
               <TouchableOpacity
                 key={category}
                 onPress={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full ${
-                  selectedCategory === category
-                    ? 'bg-primary-600'
-                    : 'bg-neutral-100'
-                }`}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  backgroundColor: selectedCategory === category ? theme.primary : theme.surfaceVariant
+                }}
               >
-                <Text className={`text-sm font-medium ${
-                  selectedCategory === category
-                    ? 'text-white'
-                    : 'text-neutral-600'
-                }`}>
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: '500',
+                  color: selectedCategory === category ? theme.onPrimary : theme.textSecondary
+                }}>
                   {category}
                 </Text>
               </TouchableOpacity>
@@ -273,29 +250,47 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       </Animated.View>
 
       {/* Products List */}
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        contentContainerStyle={{ padding: 16 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Animated.View 
-            entering={FadeInDown.delay(500).duration(800)}
-            className="items-center justify-center py-20"
-          >
-            <Text className="text-6xl mb-4">📦</Text>
-            <Text className="text-lg font-semibold text-neutral-800 mb-2">No products found</Text>
-            <Text className="text-neutral-600 text-center mb-6">
-              Try adjusting your search or add new products
-            </Text>
-            <Button
-              title="Add Product"
-              onPress={onAddProductPress}
-              icon="➕"
-            />
-          </Animated.View>
-        }
-      />
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 16 }}>Loading inventory...</Text>
+        </View>
+      ) : error ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50, paddingHorizontal: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>⚠️</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: theme.error, marginBottom: 8, textAlign: 'center' }}>Error Loading Inventory</Text>
+          <Text style={{ color: theme.textSecondary, textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+          <Button
+            title="Try Again"
+            onPress={loadProducts}
+            variant="primary"
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          contentContainerStyle={{ padding: 16 }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Animated.View 
+              entering={FadeInDown.delay(500).duration(800)}
+              style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 80 }}
+            >
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>📦</Text>
+              <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 8 }}>No products found</Text>
+              <Text style={{ color: theme.textSecondary, textAlign: 'center', marginBottom: 24 }}>
+                Try adjusting your search or add new products
+              </Text>
+              <Button
+                title="➕ Add Product"
+                onPress={onAddProductPress}
+                variant="primary"
+              />
+            </Animated.View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };

@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { SearchInput } from '../../components/Input';
 import { ProductCard, Card } from '../../components/Card';
 import { useTheme } from '../../context/ThemeContext';
+import { productService, Product, CATEGORIES } from '../../services/ProductService';
 
 interface ProductBrowseScreenProps {
   onProductPress: (productId: string) => void;
@@ -18,58 +19,72 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
   onBack,
 }) => {
   const { theme } = useTheme();
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedCategory, setSelectedCategory] = React.useState('All');
-  const [sortBy, setSortBy] = React.useState('popular');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('popular');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const categories = ['All', 'Fertilizers', 'Pesticides', 'Seeds', 'Tools', 'Equipment'];
+  const categories = ['All', ...CATEGORIES];
   
-  const products = [
-    { id: '1', title: 'NPK Fertilizer Premium Grade', price: '$45.99', category: 'Fertilizers', rating: 4.8, inStock: true },
-    { id: '2', title: 'Organic Pesticide Spray', price: '$28.50', category: 'Pesticides', rating: 4.6, inStock: true },
-    { id: '3', title: 'Hybrid Corn Seeds 10kg', price: '$35.00', category: 'Seeds', rating: 4.9, inStock: false },
-    { id: '4', title: 'Potassium Sulfate Fertilizer', price: '$52.00', category: 'Fertilizers', rating: 4.7, inStock: true },
-    { id: '5', title: 'Fungicide Spray Concentrate', price: '$42.75', category: 'Pesticides', rating: 4.5, inStock: true },
-    { id: '6', title: 'Tomato Seeds Hybrid Variety', price: '$18.99', category: 'Seeds', rating: 4.8, inStock: true },
-    { id: '7', title: 'Garden Hose 50ft Premium', price: '$89.99', category: 'Tools', rating: 4.6, inStock: true },
-    { id: '8', title: 'Phosphate Rock Fertilizer', price: '$38.50', category: 'Fertilizers', rating: 4.4, inStock: true },
-  ];
+  // Load products from Firebase
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const fetchedProducts = await productService.getAllProducts();
+      setProducts(fetchedProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setError('Failed to load products. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const renderProduct = ({ item, index }: { item: typeof products[0], index: number }) => (
-    <Animated.View
-      entering={FadeInDown.delay(index * 100).duration(600)}
-      style={{ width: '50%', paddingHorizontal: 8, marginBottom: 16 }}
-    >
-      <ProductCard
-        title={item.title}
-        price={item.price}
-        category={item.category}
-        rating={item.rating}
-        onPress={() => onProductPress(item.id)}
-        onAddToCart={item.inStock ? () => {} : undefined}
-      />
-      {!item.inStock && (
-        <View style={{
-          position: 'absolute',
-          top: 8,
-          right: 16,
-          backgroundColor: theme.error,
-          opacity: 0.9,
-          paddingHorizontal: 8,
-          paddingVertical: 4,
-          borderRadius: 8
-        }}>
-          <Text style={{ color: theme.onError, fontSize: 12, fontWeight: '500' }}>Out of Stock</Text>
-        </View>
-      )}
-    </Animated.View>
-  );
+  const renderProduct = ({ item, index }: { item: Product, index: number }) => {
+    const isInStock = item.stock > 0;
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(index * 100).duration(600)}
+        style={{ width: '50%', paddingHorizontal: 8, marginBottom: 16 }}
+      >
+        <ProductCard
+          title={item.name}
+          price={`$${item.price.toFixed(2)}`}
+          category={item.category}
+          rating={4.5} // Default rating for now
+          onPress={() => onProductPress(item.id)}
+          onAddToCart={isInStock ? () => {} : undefined}
+        />
+        {!isInStock && (
+          <View style={{
+            position: 'absolute',
+            top: 8,
+            right: 16,
+            backgroundColor: theme.error,
+            opacity: 0.9,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            borderRadius: 8
+          }}>
+            <Text style={{ color: theme.onError, fontSize: 12, fontWeight: '500' }}>Out of Stock</Text>
+          </View>
+        )}
+      </Animated.View>
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
@@ -143,25 +158,49 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
       </Animated.View>
 
       {/* Products Grid */}
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        numColumns={2}
-        contentContainerStyle={{ padding: 16 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Animated.View 
-            entering={FadeInDown.delay(500).duration(800)}
-            className="items-center justify-center py-20"
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={{ color: theme.textSecondary, marginTop: 16, fontSize: 16 }}>Loading products...</Text>
+        </View>
+      ) : error ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50, paddingHorizontal: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>⚠️</Text>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: theme.error, marginBottom: 8, textAlign: 'center' }}>Error Loading Products</Text>
+          <Text style={{ color: theme.textSecondary, textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+          <TouchableOpacity 
+            onPress={loadProducts}
+            style={{
+              backgroundColor: theme.primary,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8
+            }}
           >
-            <Text className="text-6xl mb-4">🔍</Text>
-            <Text className="text-lg font-semibold text-neutral-800 mb-2">No products found</Text>
-            <Text className="text-neutral-600 text-center">
-              Try adjusting your search or filter criteria
-            </Text>
-          </Animated.View>
-        }
-      />
+            <Text style={{ color: theme.onPrimary, fontWeight: '600' }}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderProduct}
+          numColumns={2}
+          contentContainerStyle={{ padding: 16 }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Animated.View 
+              entering={FadeInDown.delay(500).duration(800)}
+              style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 80 }}
+            >
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>🔍</Text>
+              <Text style={{ fontSize: 18, fontWeight: '600', color: theme.text, marginBottom: 8 }}>No products found</Text>
+              <Text style={{ color: theme.textSecondary, textAlign: 'center' }}>
+                Try adjusting your search or filter criteria
+              </Text>
+            </Animated.View>
+          }
+        />
+      )}
 
       {/* Floating Action Button */}
       <Animated.View 
