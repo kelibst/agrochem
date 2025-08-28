@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Load user profile from Firestore
   const loadUserProfile = async (uid: string) => {
     try {
-      console.log('🔄 Loading user profile...');
+      console.log('🔄 Loading user profile for UID:', uid);
       
       // Check Firestore connection first
       const isConnected = await firestoreService.checkConnection();
@@ -87,18 +87,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const profile = await firestoreService.getUserProfile(uid);
       if (profile) {
-        console.log('✅ User profile loaded successfully');
+        console.log('✅ User profile loaded successfully:', profile.email);
         setUserProfile(profile);
       } else {
-        console.warn('⚠️ User profile not found or unavailable');
+        console.warn('⚠️ User profile not found - this may happen if:');
+        console.warn('  1. Firestore database is not created in Firebase Console');
+        console.warn('  2. User profile document does not exist (need to register again)');
+        console.warn('  3. Firestore security rules are blocking access');
         setUserProfile(null);
       }
     } catch (error: any) {
       console.error('❌ Failed to load user profile:', error);
       
-      // Handle offline scenarios gracefully
+      // Handle specific error scenarios
       if (error.code === 'unavailable' || error.message?.includes('offline')) {
-        console.warn('📱 App is offline - user profile will be loaded when connection is restored');
+        console.warn('📱 Firestore is offline - profile will load when connection is restored');
+      } else if (error.code === 'permission-denied') {
+        console.error('🔒 Permission denied - check Firestore security rules');
+      } else if (error.code === 'not-found') {
+        console.warn('📄 Firestore database or collection not found - check Firebase Console setup');
       }
       
       setUserProfile(null);

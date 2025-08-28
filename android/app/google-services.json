@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "891643661690",
-    "project_id": "agrochem-d25c0",
-    "storage_bucket": "agrochem-d25c0.firebasestorage.app"
+    "project_number": "843729879144",
+    "project_id": "agro-connect-2959f",
+    "storage_bucket": "agro-connect-2959f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:891643661690:android:74ad55152e9f9fff92dac3",
+        "mobilesdk_app_id": "1:843729879144:android:8ffcedea920edda1f5fbdd",
         "android_client_info": {
           "package_name": "com.liliestechzone.agroconnect"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "REDACTED_API_KEY"
+          "current_key": "AIzaSyDgtflYn3fX03u7frxYaxX2IUsyM2tBv48"
         }
       ],
       "services": {

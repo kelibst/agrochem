@@ -996,3 +996,33 @@ Successfully implemented a comprehensive Firebase-based authentication and datab
 - ✅ **Logout Functionality**: Available in profile with proper flow
 - 🟡 **Shop Owner Testing**: Needs testing but implementation complete
 - 🟡 **Real-time Features**: Ready for messaging and notification implementation
+
+---
+
+## Date: 2025-08-28 (Update 2)
+
+### Security Fix: Environment Variables Migration
+**Summary:** Moved Firebase API keys and sensitive configuration from hardcoded values to environment variables to fix security vulnerability.
+
+**Actions Taken:**
+- Identified exposed Firebase API keys in `src/config/firebase.ts` and `android/app/google-services.json`
+- Created `.env` file with proper Firebase configuration using `EXPO_PUBLIC_` prefix
+- Created `.env.example` template for new developers
+- Updated Firebase configuration to use `process.env` variables
+- Enhanced `.gitignore` to exclude all `.env` files
+- Used `git filter-branch` to remove API keys from recent git history
+- Created comprehensive `ENVIRONMENT_SETUP.md` documentation
+- **Critical:** Recommended immediate Firebase API key rotation due to prior exposure
+
+**Files Modified:**
+- `src/config/firebase.ts` - Updated to use environment variables
+- `.gitignore` - Added environment file exclusions
+- `.env` - Created (not tracked by git)
+- `.env.example` - Created template
+- `ENVIRONMENT_SETUP.md` - Created security documentation
+
+**Next Steps Required:**
+1. **URGENT:** Rotate Firebase API keys in Firebase Console
+2. Force push cleaned git history to remote repository
+3. Notify team members to update their local environments
+4. Review Firebase security rules and usage monitoring

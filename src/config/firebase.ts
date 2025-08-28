@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { initializeAuth, Auth, User } from 'firebase/auth';
+import { getAuth, Auth, User } from 'firebase/auth';
 import { Firestore, Timestamp, GeoPoint, initializeFirestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 
@@ -25,8 +25,8 @@ export const initializeFirebase = async (): Promise<boolean> => {
     // Initialize Firebase app
     firebaseApp = initializeApp(firebaseConfig);
     
-    // Initialize Firebase Auth (React Native has built-in persistence)
-    firebaseAuth = initializeAuth(firebaseApp, {});
+    // Initialize Firebase Auth - use getAuth for React Native
+    firebaseAuth = getAuth(firebaseApp);
     
     // Initialize Firestore with React Native optimized settings
     firebaseFirestore = initializeFirestore(firebaseApp, {
@@ -51,12 +51,14 @@ export const checkFirebaseConfig = async (): Promise<{
     auth: boolean;
     firestore: boolean;
     storage: boolean;
+    messaging: boolean;
   };
 }> => {
   const services = {
     auth: false,
     firestore: false,
     storage: false,
+    messaging: false, // Add messaging for consistency with FirebaseTest component
   };
 
   try {
@@ -69,13 +71,20 @@ export const checkFirebaseConfig = async (): Promise<{
     // Check Storage
     services.storage = !!firebaseStorage;
     
-    const isConfigured = Object.values(services).every(Boolean);
+    // Messaging is not initialized yet, so mark as false for now
+    services.messaging = false;
+    
+    // Consider the configuration complete if auth, firestore, and storage are available
+    // (messaging is optional for now)
+    const isConfigured = services.auth && services.firestore && services.storage;
     
     if (isConfigured) {
       console.log('✅ All Firebase services are properly configured');
     } else {
       console.warn('⚠️ Some Firebase services may not be configured:', services);
     }
+    
+    // Note: Firestore connection testing is handled in firestoreService.checkConnection()
     
     return { isConfigured, services };
   } catch (error) {
