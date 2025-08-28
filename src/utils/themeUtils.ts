@@ -197,7 +197,7 @@ export const createThemeStyles = (theme: ThemeColors) => ({
 // Shadow utilities
 export const createShadow = (theme: ThemeColors): ViewStyle => ({
   shadowColor: theme.text,
-  shadowOffset: { width: 0, height: 2 },
+shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.1,
   shadowRadius: 4,
   elevation: 3,

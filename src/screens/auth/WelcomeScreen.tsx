@@ -38,7 +38,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           </Animated.View>
 
           {/* Features */}
-          <Animated.View 
+          {/* <Animated.View 
             entering={FadeInUp.delay(400).duration(800)}
             className="mb-12"
           >
@@ -64,7 +64,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 description="Chat directly with shop owners"
               />
             </View>
-          </Animated.View>
+          </Animated.View> */}
 
           {/* Action Buttons */}
           <Animated.View 

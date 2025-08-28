@@ -219,7 +219,7 @@ export const ShopOwnerRegisterScreen: React.FC<ShopOwnerRegisterScreenProps> = (
               label="Business Registration Number"
               value={formData.businessRegistrationNumber}
               onChangeText={(value) => updateField('businessRegistrationNumber', value)}
-              placeholder="Enter registration number (optional)"
+              placeholder="Enter registration number "
               icon={<Text className="text-neutral-400">📄</Text>}
             />
 
@@ -227,7 +227,7 @@ export const ShopOwnerRegisterScreen: React.FC<ShopOwnerRegisterScreenProps> = (
               label="Years in Business"
               value={formData.yearsInBusiness}
               onChangeText={(value) => updateField('yearsInBusiness', value)}
-              placeholder="Years in business (optional)"
+              placeholder="Years in business "
               keyboardType="numeric"
               error={errors.yearsInBusiness}
               icon={<Text className="text-neutral-400">📅</Text>}

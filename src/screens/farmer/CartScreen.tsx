@@ -198,7 +198,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                     color: theme.primary,
                   }}
                 >
-                  ${item.price.toFixed(2)}
+                  GHC ${item.price.toFixed(2)}
                 </Text>
 
                 {!item.inStock && (
@@ -291,7 +291,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                   marginRight: 16,
                 }}
               >
-                ${(item.price * item.quantity).toFixed(2)}
+                GHC ${(item.price * item.quantity).toFixed(2)}
               </Text>
 
               <TouchableOpacity
@@ -409,7 +409,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                       Subtotal ({cartItems.length} items)
                     </Text>
                     <Text style={{ fontSize: 14, color: theme.text }}>
-                      ${subtotal.toFixed(2)}
+                      GHC ${subtotal.toFixed(2)}
                     </Text>
                   </View>
 
@@ -418,7 +418,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                       Shipping
                     </Text>
                     <Text style={{ fontSize: 14, color: shipping === 0 ? theme.success : theme.text }}>
-                      {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
+                      {shipping === 0 ? 'FREE' : `GHC ${shipping.toFixed(2)}`}
                     </Text>
                   </View>
 
@@ -427,7 +427,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                       Tax
                     </Text>
                     <Text style={{ fontSize: 14, color: theme.text }}>
-                      ${tax.toFixed(2)}
+                      GHC ${tax.toFixed(2)}
                     </Text>
                   </View>
 
@@ -480,7 +480,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
                       color: theme.primary,
                     }}
                   >
-                    ${total.toFixed(2)}
+                    GHC ${total.toFixed(2)}
                   </Text>
                 </View>
               </Card>
@@ -509,7 +509,7 @@ export const CartScreen: React.FC<CartScreenProps> = ({
               
               <Animated.View style={[{ flex: 1 }, checkoutAnimatedStyle]}>
                 <Button
-                  title={`Checkout • $${total.toFixed(2)}`}
+                  title={`Checkout • GHC ${total.toFixed(2)}`}
                   onPress={handleCheckout}
                   variant="primary"
                   disabled={cartItems.filter(item => item.inStock).length === 0}

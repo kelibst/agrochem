@@ -146,7 +146,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.primary, marginBottom: 4 }}>
-                ${item.price.toFixed(2)}
+                GHC ${item.price.toFixed(2)}
               </Text>
               <Text style={{ fontSize: 14, color: theme.textSecondary }}>
                 Stock: {item.stock}

@@ -1206,3 +1206,97 @@ Successfully implemented a comprehensive Firebase-based authentication and datab
 - 3-week timeline instead of 8 weeks
 - Focus: Add/Edit/Delete products, view products, basic error handling
 - Removed: Advanced search, image uploads, analytics, complex filtering
+
+---
+
+## Date: 2025-08-28 (Update 4)
+
+### Build Error Fix: React Native Firebase Dependencies
+**Summary:** Fixed `npm run build-apk-local` error caused by missing `@react-native-firebase/app` core dependency.
+
+**Issue:** Build failed with error `Could not find the react-native-firebase/app package, have you installed it?`
+
+**Root Cause:** The project had `@react-native-firebase/auth` (v23.1.2) installed but was missing the required core package `@react-native-firebase/app`.
+
+**Solution:** Installed missing dependency: `npm install @react-native-firebase/app`
+
+**Result:** ✅ Local APK build now completes successfully with proper Firebase integration
+
+---
+
+## Date: 2025-08-28 (Update 5)
+
+### Currency & Navigation Updates: GHC Integration & Bottom Tab Fix
+**Summary:** Replaced all USD ($) pricing with Ghanaian Cedi (GHC) and fixed bottom navigation scrolling issues on smaller devices.
+
+**Currency Updates:**
+- **Replaced all dollar signs with "GHC"** across 15+ screens including:
+  - FarmerHomeScreen: Product prices and category averages
+  - ProductBrowseScreen: All product pricing displays
+  - CartScreen: Item prices, subtotals, shipping, tax, and total calculations
+  - ProductDetailsScreen: Product price and original price displays
+  - RecommendationsScreen: Product pricing
+  - ShopFinderScreen: Delivery fees and minimum order amounts
+  - ShopDashboardScreen: Inventory values and product pricing
+  - InventoryScreen: Product pricing displays
+  - CustomerManagementScreen: Customer spending totals
+  - MessagesScreen: Sample conversation pricing
+  - ComponentShowcaseScreen: Sample product cards
+
+**Navigation Fix:**
+- **Fixed bottom navigation scrolling issue** by replacing horizontal ScrollView with proper flex layout
+- **Enhanced TabNavigation component** to distribute tabs evenly across available width instead of scrolling
+- **Improved responsiveness** on smaller devices with:
+  - Flex-based layout (`flex: 1` on each tab)
+  - Reduced font sizes for better fit (18px icons, 10px labels)
+  - Proper `numberOfLines={1}` for text truncation
+  - `maxWidth: 80` to prevent oversized tabs
+  - Better spacing and padding for touch targets
+
+**Technical Changes:**
+- Updated 15+ screen files with currency formatting changes
+- Modified TabNavigation.tsx to use flexDirection: 'row' with justifyContent: 'space-around'
+- Fixed TypeScript errors with proper `numberOfLines` prop usage
+- Maintained theme consistency and accessibility across all changes
+
+**Result:** ✅ All pricing now displays in GHC currency format, and bottom navigation no longer scrolls on small devices
+
+---
+
+## Date: 2025-08-28 (Update 6)
+
+### Dashboard Enhancements: Real Shop Data & Improved Navigation
+**Summary:** Enhanced both farmer and shop owner dashboards with real data integration and improved user experience.
+
+**Farmer Dashboard Improvements:**
+- **Real Shop Data Integration**: Replaced hardcoded nearby shops with live data from ShopService
+- **Created ShopService**: New service to fetch shop owners from Firebase with automatic product counts
+- **Newest Shops First**: Shop list now shows recently registered shops at the top
+- **Enhanced Available Products Section**: 
+  - Added "Browse All" clickable link in section header
+  - Made all statistics cards clickable to navigate to product browse page
+  - Total Products, Active Shops, and Categories cards now redirect to product listing
+- **Loading States**: Added proper loading indicators for both products and shops data
+- **Empty States**: Added helpful messages when no shops are found
+
+**Shop Owner Dashboard Improvements:**
+- **Shop-Specific Products**: Dashboard now only shows products belonging to the logged-in shop owner
+- **Newest Products First**: Products sorted by creation date with most recent at the top
+- **Recently Added Products Section**: New horizontal scroll section showcasing the 5 most recent products
+- **Enhanced Product Display**: Each product shows category icon, name, stock level, and price
+- **Improved Navigation**: "View All" buttons link to inventory management
+
+**Technical Changes:**
+- **ShopService.ts**: New service for managing shop data with Firebase integration
+- **Real-time Data**: Both dashboards now use live Firebase data instead of mock data
+- **Sorting Logic**: Added timestamp-based sorting for products and shops
+- **Performance**: Efficient queries to Firebase with proper data filtering
+- **Type Safety**: Complete TypeScript interfaces for Shop and Product data
+
+**User Experience Enhancements:**
+- **Clickable Elements**: Statistics cards and section headers now provide navigation
+- **Visual Feedback**: Loading states and empty states for better user feedback
+- **Data Relevance**: Shop owners see only their products, farmers see all available shops
+- **Fresh Content**: Newest additions appear prominently at the top of lists
+
+**Result:** ✅ Both dashboards now display relevant, real-time data with newest content prioritized and improved navigation flow

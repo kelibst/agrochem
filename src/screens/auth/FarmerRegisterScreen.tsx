@@ -210,7 +210,7 @@ export const FarmerRegisterScreen: React.FC<FarmerRegisterScreenProps> = ({
               label="Farm Name"
               value={formData.farmName}
               onChangeText={(value) => updateField('farmName', value)}
-              placeholder="Enter your farm name (optional)"
+              placeholder="Enter your farm name"
               icon={<Text className="text-neutral-400">🚜</Text>}
             />
 
@@ -218,7 +218,7 @@ export const FarmerRegisterScreen: React.FC<FarmerRegisterScreenProps> = ({
               label="Farm Size (acres)"
               value={formData.farmSize}
               onChangeText={(value) => updateField('farmSize', value)}
-              placeholder="Enter farm size in acres (optional)"
+              placeholder="Enter farm size in acres"
               keyboardType="numeric"
               error={errors.farmSize}
               icon={<Text className="text-neutral-400">📏</Text>}

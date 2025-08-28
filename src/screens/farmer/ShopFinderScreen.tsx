@@ -287,7 +287,7 @@ export const ShopFinderScreen: React.FC<ShopFinderScreenProps> = ({
                     fontWeight: '600',
                   }}
                 >
-                  🚚 Delivery: ${shop.deliveryFee} • Min order: ${shop.minOrder}
+                  🚚 Delivery: GHC ${shop.deliveryFee} • Min order: GHC ${shop.minOrder}
                 </Text>
               </View>
             )}

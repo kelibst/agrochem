@@ -65,15 +65,19 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
     try {
       setIsLoading(true);
       const fetchedProducts = await productService.getShopProducts(user!.uid);
-      setProducts(fetchedProducts);
+      // Sort products by creation date, newest first
+      const sortedProducts = fetchedProducts.sort((a, b) => 
+        b.createdAt.seconds - a.createdAt.seconds
+      );
+      setProducts(sortedProducts);
       
       // Calculate statistics
-      const activeProducts = fetchedProducts.filter(p => p.isActive);
-      const lowStockProducts = fetchedProducts.filter(p => p.stock > 0 && p.stock <= 10);
-      const outOfStockProducts = fetchedProducts.filter(p => p.stock === 0);
+      const activeProducts = sortedProducts.filter(p => p.isActive);
+      const lowStockProducts = sortedProducts.filter(p => p.stock > 0 && p.stock <= 10);
+      const outOfStockProducts = sortedProducts.filter(p => p.stock === 0);
       
       setStats({
-        totalProducts: fetchedProducts.length,
+        totalProducts: sortedProducts.length,
         activeProducts: activeProducts.length,
         lowStockCount: lowStockProducts.length,
         outOfStockCount: outOfStockProducts.length,
@@ -370,7 +374,7 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
                   <View>
                     <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>{product.name}</Text>
                     <Text style={{ fontSize: 14, color: theme.warning }}>
-                      Only {product.stock} left • ${product.price.toFixed(2)} per {product.unit}
+                      Only {product.stock} left • GHC ${product.price.toFixed(2)} per {product.unit}
                     </Text>
                   </View>
                   <Button
@@ -383,6 +387,53 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
               ))}
               </View>
             </Card>
+          </Animated.View>
+        )}
+
+        {/* Recently Added Products */}
+        {!isLoading && products.length > 0 && (
+          <Animated.View 
+            entering={FadeInDown.delay(750).duration(800)}
+            style={{ paddingHorizontal: 24, marginBottom: 24 }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text }}>Recently Added Products</Text>
+              <TouchableOpacity onPress={onInventoryPress}>
+                <Text style={{ color: theme.primary, fontWeight: '500' }}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                {products.slice(0, 5).map((product) => (
+                  <Card key={product.id} style={{ width: 200 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 }}>
+                      <View style={{ 
+                        width: 40, 
+                        height: 40, 
+                        backgroundColor: theme.primaryContainer, 
+                        borderRadius: 8, 
+                        alignItems: 'center', 
+                        justifyContent: 'center' 
+                      }}>
+                        <Text style={{ fontSize: 20 }}>
+                          {product.category === 'Fertilizers' ? '🌱' : 
+                           product.category === 'Pesticides' ? '🦗' :
+                           product.category === 'Seeds' ? '🌰' : '🔨'}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '500', color: theme.text }} numberOfLines={1}>
+                          {product.name}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: theme.textSecondary }}>
+                          Stock: {product.stock} • GHC ${product.price.toFixed(2)}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
+                ))}
+              </View>
+            </ScrollView>
           </Animated.View>
         )}
 
@@ -413,7 +464,7 @@ export const ShopDashboardScreen: React.FC<ShopDashboardScreenProps> = ({
                       <View>
                         <Text style={{ fontSize: 16, fontWeight: '500', color: theme.text }}>{category}</Text>
                         <Text style={{ fontSize: 14, color: theme.textSecondary }}>
-                          {categoryProducts.length} products • ${totalValue.toFixed(2)} inventory value
+                          {categoryProducts.length} products • GHC ${totalValue.toFixed(2)} inventory value
                         </Text>
                       </View>
                       <View style={{

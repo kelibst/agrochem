@@ -62,7 +62,7 @@ export const ProductBrowseScreen: React.FC<ProductBrowseScreenProps> = ({
       >
         <ProductCard
           title={item.name}
-          price={`$${item.price.toFixed(2)}`}
+          price={`GHC ${item.price.toFixed(2)}`}
           category={item.category}
           rating={4.5} // Default rating for now
           onPress={() => onProductPress(item.id)}

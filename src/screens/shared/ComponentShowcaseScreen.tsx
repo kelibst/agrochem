@@ -178,7 +178,7 @@ export const ComponentShowcaseScreen: React.FC<ComponentShowcaseScreenProps> = (
               <View className="flex-row">
                 <ProductCard
                   title="NPK Fertilizer Premium"
-                  price="$45.99"
+                  price="GHC 45.99"
                   category="Fertilizers"
                   rating={4.8}
                   onPress={() => {}}
@@ -186,7 +186,7 @@ export const ComponentShowcaseScreen: React.FC<ComponentShowcaseScreenProps> = (
                 />
                 <ProductCard
                   title="Organic Pesticide Spray"
-                  price="$28.50"
+                  price="GHC 28.50"
                   category="Pesticides"
                   rating={4.6}
                   onPress={() => {}}

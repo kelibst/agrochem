@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 
 export interface TabItem {
@@ -26,57 +26,56 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
     <View style={{
       backgroundColor: theme.surface,
       borderTopWidth: 1,
-      borderTopColor: theme.outline,
+      borderTopColor: theme.accent,
       paddingTop: 8,
       paddingBottom: 8,
-      paddingHorizontal: 4,
+      paddingHorizontal: 8,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
     }}>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-      >
-        <View style={{ flexDirection: 'row', gap: 4 }}>
-          {tabs.map((tab) => {
-            const isActive = tab.id === activeTabId;
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                onPress={() => {
-                  onTabPress(tab.id);
-                  tab.onPress();
-                }}
-                style={{
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 12,
-                  backgroundColor: isActive ? theme.primaryContainer : 'transparent',
-                  minWidth: 80,
-                }}
-              >
-                <Text style={{ 
-                  fontSize: 20, 
-                  marginBottom: 4,
-                  opacity: isActive ? 1 : 0.7
-                }}>
-                  {tab.icon}
-                </Text>
-                <Text style={{
-                  fontSize: 12,
-                  fontWeight: isActive ? '600' : '400',
-                  color: isActive ? theme.onPrimaryContainer : theme.textSecondary,
-                  textAlign: 'center',
-                }}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTabId;
+        return (
+          <TouchableOpacity
+            key={tab.id}
+            onPress={() => {
+              onTabPress(tab.id);
+              tab.onPress();
+            }}
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 8,
+              paddingHorizontal: 4,
+              borderRadius: 12,
+              backgroundColor: isActive ? theme.primaryContainer : 'transparent',
+              maxWidth: 80,
+              minHeight: 60,
+            }}
+          >
+            <Text style={{ 
+              fontSize: 18, 
+              marginBottom: 4,
+              opacity: isActive ? 1 : 0.7
+            }}>
+              {tab.icon}
+            </Text>
+            <Text 
+              numberOfLines={1}
+              style={{
+                fontSize: 10,
+                fontWeight: isActive ? '600' : '400',
+                color: isActive ? theme.onPrimaryContainer : theme.textSecondary,
+                textAlign: 'center',
+              }}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };

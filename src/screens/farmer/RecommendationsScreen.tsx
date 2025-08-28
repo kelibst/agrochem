@@ -304,7 +304,7 @@ export const RecommendationsScreen: React.FC<RecommendationsScreenProps> = ({
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.primary }}>
-                      ${product.price}
+                      GHC ${product.price}
                     </Text>
                     
                     <View style={{ flexDirection: 'row', gap: 8 }}>

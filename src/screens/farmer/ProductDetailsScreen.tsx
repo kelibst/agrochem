@@ -13,6 +13,8 @@ import Animated, {
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { messageService } from '../../services/MessageService';
 
 const { width } = Dimensions.get('window');
 
@@ -21,7 +23,7 @@ interface ProductDetailsScreenProps {
   onBack: () => void;
   onAddToCart: (productId: string, quantity: number) => void;
   onShopPress: (shopId: string) => void;
-  onMessageShop: (shopId: string) => void;
+  onMessageShop: (conversationId: string) => void;
 }
 
 export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
@@ -32,8 +34,10 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
   onMessageShop,
 }) => {
   const { theme } = useTheme();
+  const { userProfile } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
   
   const addToCartScale = useSharedValue(1);
 
@@ -94,6 +98,33 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
   const adjustQuantity = (change: number) => {
     const newQuantity = Math.max(1, Math.min(product.stockCount, quantity + change));
     setQuantity(newQuantity);
+  };
+
+  const handleMessageShop = async () => {
+    if (!userProfile?.uid || isStartingConversation) return;
+    
+    setIsStartingConversation(true);
+    try {
+      const farmerName = userProfile.profile?.name || 'Unknown Farmer';
+      
+      // Start a product inquiry conversation
+      const conversationId = await messageService.startProductInquiry(
+        userProfile.uid,
+        farmerName,
+        product.shop.id,
+        product.shop.name,
+        product.name,
+        product.id
+      );
+      
+      // Navigate to the conversation
+      onMessageShop(conversationId);
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      // You could show an error message here
+    } finally {
+      setIsStartingConversation(false);
+    }
   };
 
   return (
@@ -176,7 +207,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                   <Text style={{ fontSize: 20, fontWeight: 'bold', color: theme.primary, marginRight: 8 }}>
-                    ${product.price}
+                    GHC ${product.price}
                   </Text>
                   <Text style={{ 
                     fontSize: 16, 
@@ -184,7 +215,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
                     textDecorationLine: 'line-through',
                     marginRight: 8 
                   }}>
-                    ${product.originalPrice}
+                    GHC ${product.originalPrice}
                   </Text>
                   <View style={{ 
                     backgroundColor: theme.error + '20', 
@@ -343,16 +374,18 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
                   </View>
                 </View>
                 <TouchableOpacity
-                  onPress={() => onMessageShop(product.shop.id)}
+                  onPress={handleMessageShop}
+                  disabled={isStartingConversation}
                   style={{
                     backgroundColor: theme.primaryContainer,
                     paddingHorizontal: 16,
                     paddingVertical: 8,
                     borderRadius: 8,
+                    opacity: isStartingConversation ? 0.6 : 1,
                   }}
                 >
                   <Text style={{ fontSize: 12, color: theme.onPrimaryContainer, fontWeight: '600' }}>
-                    Message
+                    {isStartingConversation ? 'Starting...' : 'Message'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -423,7 +456,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
           {/* Add to Cart Button */}
           <Animated.View style={[addToCartAnimatedStyle, { paddingHorizontal: 24 }]}>
             <Button
-              title={`Add to Cart • $${(product.price * quantity).toFixed(2)}`}
+              title={`Add to Cart • GHC ${(product.price * quantity).toFixed(2)}`}
               onPress={handleAddToCart}
               variant="primary"
               disabled={!product.inStock}

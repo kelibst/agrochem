@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   FadeInUp,
@@ -12,16 +12,10 @@ import Animated, {
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { messageService, Message, Conversation } from '../../services/MessageService';
 
-interface Message {
-  id: string;
-  text: string;
-  timestamp: Date;
-  isFromMe: boolean;
-  status: 'sent' | 'delivered' | 'read';
-}
-
-interface Conversation {
+interface ConversationDisplay {
   id: string;
   name: string;
   avatar: string;
@@ -44,11 +38,74 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
   conversationId,
 }) => {
   const { theme } = useTheme();
+  const { userProfile } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationId || null);
   const [newMessage, setNewMessage] = useState('');
+  const [conversations, setConversations] = useState<ConversationDisplay[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
-  // Mock conversations data
-  const [conversations] = useState<Conversation[]>([
+  // Load conversations from Firebase
+  useEffect(() => {
+    if (!userProfile?.uid) return;
+
+    setIsLoading(true);
+    const unsubscribe = messageService.subscribeToConversations(
+      userProfile.uid,
+      userType,
+      (firebaseConversations) => {
+        const displayConversations: ConversationDisplay[] = firebaseConversations.map(conv => {
+          const isUserFarmer = userType === 'farmer';
+          const otherUserName = isUserFarmer ? conv.participants.shopName : conv.participants.farmerName;
+          const unreadCount = isUserFarmer ? conv.unreadCount.farmer : conv.unreadCount.shopOwner;
+          
+          return {
+            id: conv.id,
+            name: otherUserName,
+            avatar: isUserFarmer ? '🏪' : '👨‍🌾',
+            lastMessage: conv.lastMessage?.text || 'No messages yet',
+            lastMessageTime: conv.lastMessage?.timestamp?.toDate() || conv.createdAt.toDate(),
+            unreadCount,
+            isOnline: Math.random() > 0.5, // Random for now - would need presence system
+            type: isUserFarmer ? 'shop' : 'farmer',
+          };
+        });
+        setConversations(displayConversations);
+        setIsLoading(false);
+      }
+    );
+
+    return unsubscribe;
+  }, [userProfile?.uid, userType]);
+
+  // Load messages for selected conversation
+  useEffect(() => {
+    if (!selectedConversation) {
+      setMessages([]);
+      return;
+    }
+
+    setIsLoadingMessages(true);
+    const unsubscribe = messageService.subscribeToMessages(
+      selectedConversation,
+      (conversationMessages) => {
+        setMessages(conversationMessages);
+        setIsLoadingMessages(false);
+        
+        // Mark messages as read when viewing conversation
+        if (userProfile?.uid) {
+          messageService.markMessagesAsRead(selectedConversation, userProfile.uid, userType);
+        }
+      }
+    );
+
+    return unsubscribe;
+  }, [selectedConversation, userProfile?.uid, userType]);
+
+  // Mock conversations data for fallback
+  const mockConversations = [
     {
       id: '1',
       name: 'Green Valley Supplies',
@@ -89,10 +146,10 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
       isOnline: false,
       type: 'farmer',
     },
-  ]);
+  ];
 
-  // Mock messages for selected conversation
-  const [messages] = useState<Record<string, Message[]>>({
+  // Mock messages for selected conversation (fallback)
+  const mockMessages: Record<string, Message[]> = {
     '1': [
       {
         id: '1',
@@ -103,7 +160,7 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
       },
       {
         id: '2',
-        text: 'Hello! Thank you for your interest. Our NPK 20-20-20 is currently $45.99 per 25kg bag.',
+        text: 'Hello! Thank you for your interest. Our NPK 20-20-20 is currently GHC 45.99 per 25kg bag.',
         timestamp: new Date(Date.now() - 55 * 60 * 1000),
         isFromMe: false,
         status: 'read',
@@ -117,7 +174,7 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
       },
       {
         id: '4',
-        text: 'Absolutely! I\'ll prepare your order. Total would be $459.90. Do you need delivery?',
+        text: 'Absolutely! I\'ll prepare your order. Total would be GHC 459.90. Do you need delivery?',
         timestamp: new Date(Date.now() - 45 * 60 * 1000),
         isFromMe: false,
         status: 'read',
@@ -137,7 +194,7 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
         status: 'delivered',
       },
     ],
-  });
+  };
 
   const formatTime = (date: Date) => {
     const now = new Date();
@@ -155,12 +212,26 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
     return date.toLocaleDateString();
   };
 
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation || !userProfile?.uid || isSending) return;
     
-    // In a real app, this would send the message to the backend
-    console.log('Sending message:', newMessage);
-    setNewMessage('');
+    setIsSending(true);
+    try {
+      const senderName = userProfile.profile?.name || 'Unknown User';
+      await messageService.sendMessage(
+        selectedConversation,
+        userProfile.uid,
+        senderName,
+        userType,
+        newMessage
+      );
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // You could show an error toast here
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const ConversationItem = ({ conversation, index }: { conversation: Conversation; index: number }) => (
@@ -271,59 +342,62 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
     </Animated.View>
   );
 
-  const MessageBubble = ({ message, index }: { message: Message; index: number }) => (
-    <Animated.View
-      key={message.id}
-      entering={message.isFromMe ? SlideInRight.delay(index * 50).duration(400) : SlideInLeft.delay(index * 50).duration(400)}
-      style={{
-        alignItems: message.isFromMe ? 'flex-end' : 'flex-start',
-        marginBottom: 12,
-      }}
-    >
-      <View
+  const MessageBubble = ({ message, index }: { message: Message; index: number }) => {
+    const isFromMe = message.senderId === userProfile?.uid;
+    
+    return (
+      <Animated.View
+        key={message.id}
+        entering={isFromMe ? SlideInRight.delay(index * 50).duration(400) : SlideInLeft.delay(index * 50).duration(400)}
         style={{
-          backgroundColor: message.isFromMe ? theme.primary : theme.surfaceVariant,
-          borderRadius: 16,
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          maxWidth: '80%',
-          borderBottomRightRadius: message.isFromMe ? 4 : 16,
-          borderBottomLeftRadius: message.isFromMe ? 16 : 4,
+          alignItems: isFromMe ? 'flex-end' : 'flex-start',
+          marginBottom: 12,
         }}
       >
-        <Text
+        <View
           style={{
-            fontSize: 14,
-            color: message.isFromMe ? theme.onPrimary : theme.text,
-            lineHeight: 20,
+            backgroundColor: isFromMe ? theme.primary : theme.surfaceVariant,
+            borderRadius: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            maxWidth: '80%',
+            borderBottomRightRadius: isFromMe ? 4 : 16,
+            borderBottomLeftRadius: isFromMe ? 16 : 4,
           }}
         >
-          {message.text}
-        </Text>
-      </View>
-      
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, paddingHorizontal: 8 }}>
-        <Text
-          style={{
-            fontSize: 12,
-            color: theme.textTertiary,
-            marginRight: 4,
-          }}
-        >
-          {formatTime(message.timestamp)}
-        </Text>
-        {message.isFromMe && (
-          <Text style={{ fontSize: 12, color: theme.textTertiary }}>
-            {message.status === 'sent' ? '✓' : message.status === 'delivered' ? '✓✓' : '✓✓'}
+          <Text
+            style={{
+              fontSize: 14,
+              color: isFromMe ? theme.onPrimary : theme.text,
+              lineHeight: 20,
+            }}
+          >
+            {message.text}
           </Text>
-        )}
-      </View>
-    </Animated.View>
-  );
+        </View>
+        
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, paddingHorizontal: 8 }}>
+          <Text
+            style={{
+              fontSize: 12,
+              color: theme.textTertiary,
+              marginRight: 4,
+            }}
+          >
+            {formatTime(message.timestamp?.toDate?.() || new Date())}
+          </Text>
+          {isFromMe && (
+            <Text style={{ fontSize: 12, color: theme.textTertiary }}>
+              {message.status === 'sent' ? '✓' : message.status === 'delivered' ? '✓✓' : '✓✓'}
+            </Text>
+          )}
+        </View>
+      </Animated.View>
+    );
+  };
 
   if (selectedConversation) {
     const conversation = conversations.find(c => c.id === selectedConversation);
-    const conversationMessages = messages[selectedConversation] || [];
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
@@ -377,9 +451,23 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
           style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 16 }}
           showsVerticalScrollIndicator={false}
         >
-          {conversationMessages.map((message, index) => (
-            <MessageBubble key={message.id} message={message} index={index} />
-          ))}
+          {isLoadingMessages ? (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+              <ActivityIndicator size="large" color={theme.primary} />
+              <Text style={{ color: theme.textSecondary, marginTop: 12 }}>Loading messages...</Text>
+            </View>
+          ) : messages.length > 0 ? (
+            messages.map((message, index) => (
+              <MessageBubble key={message.id} message={message} index={index} />
+            ))
+          ) : (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+              <Text style={{ fontSize: 40, marginBottom: 16 }}>💬</Text>
+              <Text style={{ color: theme.textSecondary, textAlign: 'center' }}>
+                No messages yet. Start the conversation!
+              </Text>
+            </View>
+          )}
         </ScrollView>
 
         {/* Message Input */}
@@ -427,9 +515,9 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
 
           <TouchableOpacity
             onPress={sendMessage}
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || isSending}
             style={{
-              backgroundColor: newMessage.trim() ? theme.primary : theme.surfaceVariant,
+              backgroundColor: (newMessage.trim() && !isSending) ? theme.primary : theme.surfaceVariant,
               width: 48,
               height: 48,
               borderRadius: 24,
@@ -437,9 +525,13 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 20, color: newMessage.trim() ? theme.onPrimary : theme.textSecondary }}>
-              ➤
-            </Text>
+            {isSending ? (
+              <ActivityIndicator size="small" color={theme.onPrimary} />
+            ) : (
+              <Text style={{ fontSize: 20, color: newMessage.trim() ? theme.onPrimary : theme.textSecondary }}>
+                ➤
+              </Text>
+            )}
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
@@ -534,7 +626,12 @@ export const MessagesScreen: React.FC<MessagesScreenProps> = ({
       </Animated.View>
 
       {/* Conversations List */}
-      {conversations.length === 0 ? (
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={{ color: theme.textSecondary, marginTop: 12 }}>Loading conversations...</Text>
+        </View>
+      ) : conversations.length === 0 ? (
         <Animated.View
           entering={FadeInDown.delay(400).duration(800)}
           style={{
