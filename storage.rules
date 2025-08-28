@@ -1,0 +1,91 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+    
+    function isImageFile() {
+      return resource.contentType.matches('image/.*');
+    }
+    
+    function isValidSize() {
+      return resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+    
+    // User profile pictures
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      isImageFile() && 
+                      isValidSize();
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Shop images
+    match /shops/{shopId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      hasRole('shop_owner') && 
+                      isShopOwner(shopId) && 
+                      isImageFile() && 
+                      isValidSize();
+      allow delete: if isAuthenticated() && 
+                       hasRole('shop_owner') && 
+                       isShopOwner(shopId);
+      
+      function isShopOwner(shopId) {
+        return firestore.get(/databases/(default)/documents/shops/$(shopId)).data.ownerId == request.auth.uid;
+      }
+    }
+    
+    // Product images
+    match /products/{productId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      hasRole('shop_owner') && 
+                      isProductOwner(productId) && 
+                      isImageFile() && 
+                      isValidSize();
+      allow delete: if isAuthenticated() && 
+                       hasRole('shop_owner') && 
+                       isProductOwner(productId);
+      
+      function isProductOwner(productId) {
+        let product = firestore.get(/databases/(default)/documents/products/$(productId)).data;
+        let shop = firestore.get(/databases/(default)/documents/shops/$(product.shopId)).data;
+        return shop.ownerId == request.auth.uid;
+      }
+    }
+    
+    // Message images
+    match /messages/{messageId}/{fileName} {
+      allow read: if isAuthenticated() && isMessageParticipant(messageId);
+      allow write: if isAuthenticated() && 
+                      isMessageSender(messageId) && 
+                      isImageFile() && 
+                      isValidSize();
+      allow delete: if isAuthenticated() && isMessageSender(messageId);
+      
+      function isMessageParticipant(messageId) {
+        let message = firestore.get(/databases/(default)/documents/messages/$(messageId)).data;
+        return request.auth.uid == message.senderId || request.auth.uid == message.receiverId;
+      }
+      
+      function isMessageSender(messageId) {
+        let message = firestore.get(/databases/(default)/documents/messages/$(messageId)).data;
+        return request.auth.uid == message.senderId;
+      }
+    }
+  }
+}

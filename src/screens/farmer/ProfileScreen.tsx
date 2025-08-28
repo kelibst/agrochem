@@ -6,27 +6,34 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface ProfileScreenProps {
   onBackPress: () => void;
   onThemeToggle: () => void;
+  onLogout?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onBackPress,
   onThemeToggle,
+  onLogout,
 }) => {
   const { theme, isDark } = useTheme();
+  const { userProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Get user data from auth context
+  const farmerProfile = userProfile?.profile && 'farmName' in userProfile.profile ? userProfile.profile : null;
   const [profileData, setProfileData] = useState({
-    name: 'John Farmer',
-    email: 'john@farmstead.com',
-    phone: '+1 (555) 123-4567',
-    farmName: 'Green Valley Farmstead',
-    location: 'Green Valley, CA',
-    farmSize: '150 acres',
-    cropTypes: 'Corn, Soybeans, Wheat',
-    experience: '12 years',
+    name: userProfile?.profile?.name || 'Farmer',
+    email: userProfile?.email || '',
+    phone: userProfile?.profile?.phone || '',
+    farmName: farmerProfile?.farmName || '',
+    location: userProfile?.profile?.address || '',
+    farmSize: farmerProfile?.farmSize ? `${farmerProfile.farmSize} acres` : '',
+    cropTypes: farmerProfile?.cropsGrown?.join(', ') || '',
+    experience: farmerProfile?.experienceYears ? `${farmerProfile.experienceYears} years` : '',
   });
 
   const handleSave = () => {
@@ -51,18 +58,18 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     { label: 'Total Orders', value: '156', icon: '📦' },
     { label: 'Total Spent', value: '$12,450', icon: '💰' },
     { label: 'Favorite Category', value: 'Fertilizers', icon: '🌾' },
-    { label: 'Member Since', value: 'Jan 2023', icon: '📅' },
+    { label: 'Member Since', value: userProfile?.createdAt ? new Date(userProfile.createdAt.toDate()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently', icon: '📅' },
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'left', 'right']}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <Animated.View 
           entering={FadeInUp.delay(200).duration(800)}
           style={{
             paddingHorizontal: 24,
-            paddingTop: 16,
+            paddingTop: 8,
             paddingBottom: 24,
             backgroundColor: theme.surface,
           }}
@@ -404,6 +411,21 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 onPress={() => Alert.alert('Export Data', 'Your data will be prepared for download.')}
                 variant="outline"
               />
+              {onLogout && (
+                <Button
+                  title="🚪 Logout"
+                  onPress={() => Alert.alert(
+                    'Logout',
+                    'Are you sure you want to logout?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Logout', onPress: onLogout }
+                    ]
+                  )}
+                  variant="outline"
+                />
+              )}
+
               <Button
                 title="❌ Delete Account"
                 onPress={() => Alert.alert(
