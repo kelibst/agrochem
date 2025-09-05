@@ -248,7 +248,7 @@ export const ShopOwnerProfileScreen: React.FC<ShopOwnerProfileScreenProps> = ({
         </Animated.View>
 
         {/* Achievements */}
-        <Animated.View 
+        {/* <Animated.View 
           entering={FadeInDown.delay(500).duration(800)}
           style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
@@ -273,7 +273,7 @@ export const ShopOwnerProfileScreen: React.FC<ShopOwnerProfileScreenProps> = ({
               </View>
             ))}
           </View>
-        </Animated.View>
+        </Animated.View> */}
 
         {/* Settings */}
         <Animated.View 

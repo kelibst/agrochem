@@ -258,7 +258,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </Animated.View>
 
         {/* Achievements */}
-        <Animated.View 
+        {/* <Animated.View 
           entering={FadeInDown.delay(500).duration(800)}
           style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
@@ -283,7 +283,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               </View>
             ))}
           </View>
-        </Animated.View>
+        </Animated.View> */}
 
         {/* Settings */}
         <Animated.View 

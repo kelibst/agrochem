@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { useTheme } from '../../context/ThemeContext';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { firebaseFirestore, firebaseAuth } from '../../config/firebase';
+
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  totalOrders: number;
+  totalSpent: string;
+  lastOrder: string;
+  status: string;
+  joinDate: string;
+  rating: number;
+  role?: string;
+}
 
 interface CustomerManagementScreenProps {
   onBackPress: () => void;
@@ -18,61 +35,109 @@ export const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> =
   const { theme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'new' | 'inactive'>('all');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const customers = [
-    {
-      id: '1',
-      name: 'John Farmer',
-      email: 'john@farmstead.com',
-      phone: '+1 (555) 123-4567',
-      location: 'Green Valley, CA',
-      totalOrders: 15,
-      totalSpent: 'GHC 2,450.75',
-      lastOrder: '2 days ago',
-      status: 'active',
-      joinDate: 'Jan 2024',
-      rating: 4.8,
-    },
-    {
-      id: '2',
-      name: 'Sarah Green',
-      email: 'sarah@greenacres.com',
-      phone: '+1 (555) 234-5678',
-      location: 'Sunny Fields, TX',
-      totalOrders: 23,
-      totalSpent: 'GHC 3,890.50',
-      lastOrder: '1 day ago',
-      status: 'active',
-      joinDate: 'Nov 2023',
-      rating: 4.9,
-    },
-    {
-      id: '3',
-      name: 'Mike Johnson',
-      email: 'mike@johnsonfarm.net',
-      phone: '+1 (555) 345-6789',
-      location: 'Prairie View, KS',
-      totalOrders: 8,
-      totalSpent: 'GHc1,230.25',
-      lastOrder: '1 week ago',
-      status: 'new',
-      joinDate: 'Mar 2024',
-      rating: 4.6,
-    },
-    {
-      id: '4',
-      name: 'Lisa Brown',
-      email: 'lisa@brownfarms.org',
-      phone: '+1 (555) 456-7890',
-      location: 'Golden Plains, NE',
-      totalOrders: 45,
-      totalSpent: 'GHc8,750.00',
-      lastOrder: '3 weeks ago',
-      status: 'inactive',
-      joinDate: 'Jun 2023',
-      rating: 4.7,
-    },
-  ];
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const currentUser = firebaseAuth.currentUser;
+        if (!currentUser) {
+          setError('User not authenticated');
+          setLoading(false);
+          return;
+        }
+
+        // Query users collection for farmers
+        const customersQuery = query(
+          collection(firebaseFirestore, 'users'),
+          where('role', '==', 'farmer')
+        );
+
+        // Set up real-time listener
+        const unsubscribe = onSnapshot(
+          customersQuery,
+          (snapshot) => {
+            const fetchedCustomers: Customer[] = [];
+            
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+              const lastOrderDate = data.lastOrderDate?.toDate ? data.lastOrderDate.toDate() : null;
+              
+              // Calculate relative time for join date
+              const joinDateFormatted = new Intl.DateTimeFormat('en-US', { 
+                month: 'short', 
+                year: 'numeric' 
+              }).format(createdAt);
+              
+              // Calculate relative time for last order
+              const getRelativeTime = (date: Date | null) => {
+                if (!date) return 'No orders yet';
+                const diff = Date.now() - date.getTime();
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                if (days === 0) return 'Today';
+                if (days === 1) return '1 day ago';
+                if (days < 7) return `${days} days ago`;
+                if (days < 30) return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? 's' : ''} ago`;
+                return `${Math.floor(days / 30)} month${Math.floor(days / 30) > 1 ? 's' : ''} ago`;
+              };
+              
+              // Determine customer status
+              const getCustomerStatus = () => {
+                const daysSinceJoined = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+                if (daysSinceJoined < 30) return 'new';
+                if (!lastOrderDate) return 'inactive';
+                const daysSinceLastOrder = Math.floor((Date.now() - lastOrderDate.getTime()) / (1000 * 60 * 60 * 24));
+                if (daysSinceLastOrder > 30) return 'inactive';
+                return 'active';
+              };
+              
+              fetchedCustomers.push({
+                id: doc.id,
+                name: data.profile?.name || data.fullName || data.name || 'Unknown',
+                email: data.email || '',
+                phone: data.profile?.phone || data.phoneNumber || data.phone || '',
+                location: data.profile?.address || data.location || data.address || 'Location not set',
+                totalOrders: data.totalOrders || 0,
+                totalSpent: `GHC ${(data.totalSpent || 0).toFixed(2)}`,
+                lastOrder: getRelativeTime(lastOrderDate),
+                status: getCustomerStatus(),
+                joinDate: joinDateFormatted,
+                rating: data.rating || 4.0,
+                role: data.role
+              });
+            });
+            
+            // Shuffle the customers array for random display
+            const shuffledCustomers = [...fetchedCustomers].sort(() => Math.random() - 0.5);
+            setCustomers(shuffledCustomers);
+            setLoading(false);
+          },
+          (error) => {
+            console.error('Error fetching customers:', error);
+            setError('Failed to load customers');
+            setLoading(false);
+          }
+        );
+
+        // Cleanup subscription
+        return () => unsubscribe();
+      } catch (error) {
+        console.error('Error setting up customers listener:', error);
+        setError('Failed to initialize customer data');
+        setLoading(false);
+      }
+  };
+
+    fetchCustomers();
+  }, []);
+
+  console.log(customers, 'customers');
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -143,6 +208,41 @@ export const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> =
     </View>
   );
 
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+          <Text style={{ marginTop: 16, color: theme.textSecondary }}>Loading customers...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>⚠️</Text>
+          <Text style={{ fontSize: 18, color: theme.text, marginBottom: 8 }}>Error Loading Customers</Text>
+          <Text style={{ color: theme.textSecondary, textAlign: 'center' }}>{error}</Text>
+          <TouchableOpacity
+            onPress={onBackPress}
+            style={{
+              marginTop: 24,
+              paddingVertical: 12,
+              paddingHorizontal: 24,
+              backgroundColor: theme.primary,
+              borderRadius: 12,
+            }}
+          >
+            <Text style={{ color: theme.onPrimary, fontWeight: '600' }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
@@ -211,7 +311,23 @@ export const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> =
           entering={FadeInDown.delay(400).duration(800)}
           style={{ paddingHorizontal: 24, marginBottom: 24 }}
         >
-          {filteredCustomers.map((customer, index) => (
+          {filteredCustomers.length === 0 ? (
+            <View style={{ 
+              paddingVertical: 48, 
+              alignItems: 'center',
+              backgroundColor: theme.surface,
+              borderRadius: 12,
+            }}>
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>🔍</Text>
+              <Text style={{ fontSize: 16, color: theme.text, marginBottom: 8 }}>
+                No customers found
+              </Text>
+              <Text style={{ color: theme.textSecondary, textAlign: 'center' }}>
+                {searchQuery ? 'Try adjusting your search' : 'No farmers have registered yet'}
+              </Text>
+            </View>
+          ) : (
+            filteredCustomers.map((customer, index) => (
             <Animated.View
               key={customer.id}
               entering={FadeInDown.delay(500 + index * 100).duration(600)}
@@ -285,7 +401,8 @@ export const CustomerManagementScreen: React.FC<CustomerManagementScreenProps> =
                 </View>
               </Card>
             </Animated.View>
-          ))}
+          ))
+          )}
         </Animated.View>
 
         {/* Summary Stats */}

@@ -273,10 +273,12 @@ export default function Page() {
       {renderScreen()}
       
       {/* Floating Dev Button - Hide on dev-menu and entry screens */}
-      <FloatingDevButton
-        onPress={() => setCurrentScreen('dev-menu')}
-        visible={currentScreen !== 'dev-menu' && currentScreen !== 'entry'}
-      />
+     {
+      // <FloatingDevButton
+      //   onPress={() => setCurrentScreen('dev-menu')}
+      //   visible={currentScreen !== 'dev-menu' && currentScreen !== 'entry'}
+      // />
+     } 
     </View>
   );
 }
