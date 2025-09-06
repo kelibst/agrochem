@@ -12,17 +12,19 @@ import { AddProductScreen } from './AddProductScreen';
 import { CustomerManagementScreen } from './CustomerManagementScreen';
 import { ShopOwnerProfileScreen } from './ShopOwnerProfileScreen';
 
-type ShopTabType = 'dashboard' | 'inventory' | 'analytics' | 'customers' | 'profile';
+type ShopTabType = 'dashboard' | 'inventory' | 'analytics' | 'customers' | 'messages' | 'profile';
 
 interface ShopOwnerDashboardProps {
   onProductPress: (productId: string) => void;
   onMessageCustomer: (customerId: string) => void;
+  onMessagesPress: () => void;
   onLogout: () => void;
 }
 
 export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
   onProductPress,
   onMessageCustomer,
+  onMessagesPress,
   onLogout,
 }) => {
   const { theme, toggleTheme } = useTheme();
@@ -61,6 +63,12 @@ export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
       onPress: () => setActiveTab('customers'),
     },
     {
+      id: 'messages',
+      label: 'Messages',
+      icon: '💬',
+      onPress: () => onMessagesPress(),
+    },
+    {
       id: 'profile',
       label: 'Profile',
       icon: '👤',
@@ -88,7 +96,7 @@ export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
             onOrderPress={() => {}}
             onInventoryPress={() => setActiveTab('inventory')}
             onAnalyticsPress={() => setActiveTab('analytics')}
-            onMessagesPress={() => {}}
+            onMessagesPress={onMessagesPress}
             onAddProductPress={() => setShowAddProduct(true)}
             onCustomerManagementPress={() => setActiveTab('customers')}
           />
@@ -119,6 +127,11 @@ export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
           />
         );
       
+      case 'messages':
+        // This should not render - navigation should happen in the tab press handler
+        setActiveTab('dashboard');
+        return null;
+      
       case 'profile':
         return (
           <ShopOwnerProfileScreen
@@ -134,7 +147,7 @@ export const ShopOwnerDashboard: React.FC<ShopOwnerDashboardProps> = ({
             onOrderPress={() => {}}
             onInventoryPress={() => setActiveTab('inventory')}
             onAnalyticsPress={() => setActiveTab('analytics')}
-            onMessagesPress={() => {}}
+            onMessagesPress={onMessagesPress}
             onAddProductPress={() => setShowAddProduct(true)}
             onCustomerManagementPress={() => setActiveTab('customers')}
           />

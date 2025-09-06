@@ -11,12 +11,13 @@ import { OrdersScreen } from './OrdersScreen';
 import { CartScreen } from './CartScreen';
 import { ProductBrowseScreen } from './ProductBrowseScreen';
 
-type FarmerTabType = 'home' | 'browse' | 'cart' | 'orders' | 'profile';
+type FarmerTabType = 'home' | 'browse' | 'cart' | 'orders' | 'messages' | 'profile';
 
 interface FarmerDashboardProps {
   onProductPress: (productId: string) => void;
   onShopPress: (shopId: string) => void;
   onMessageShop: (shopId: string) => void;
+  onMessagesPress: () => void;
   onLogout: () => void;
 }
 
@@ -24,6 +25,7 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
   onProductPress,
   onShopPress,
   onMessageShop,
+  onMessagesPress,
   onLogout,
 }) => {
   const { theme, toggleTheme } = useTheme();
@@ -61,6 +63,12 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
       onPress: () => setActiveTab('orders'),
     },
     {
+      id: 'messages',
+      label: 'Messages',
+      icon: '💬',
+      onPress: () => onMessagesPress(),
+    },
+    {
       id: 'profile',
       label: 'Profile',
       icon: '👤',
@@ -83,6 +91,7 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
             onRecommendationsPress={() => {}}
             onOrdersPress={() => setActiveTab('orders')}
             onCartPress={() => setActiveTab('cart')}
+            onMessagesPress={onMessagesPress}
           />
         );
       
@@ -115,6 +124,11 @@ export const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
             onBack={() => setActiveTab('home')}
           />
         );
+      
+      case 'messages':
+        // This should not render - navigation should happen in the tab press handler
+        setActiveTab('home');
+        return null;
       
       case 'profile':
         return (

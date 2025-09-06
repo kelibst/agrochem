@@ -177,6 +177,7 @@ export default function Page() {
             onProductPress={(id) => setCurrentScreen('product-details')}
             onShopPress={(id) => setCurrentScreen('shop-finder')}
             onMessageShop={(shopId) => setCurrentScreen('farmer-messages')}
+            onMessagesPress={() => setCurrentScreen('farmer-messages')}
             onLogout={async () => {
               await logout();
               showSuccess('Signed Out', 'You have been successfully signed out.');
@@ -214,6 +215,7 @@ export default function Page() {
           <ShopOwnerDashboard
             onProductPress={(id) => console.log('Product pressed:', id)}
             onMessageCustomer={(customerId) => setCurrentScreen('shop-messages')}
+            onMessagesPress={() => setCurrentScreen('shop-messages')}
             onLogout={async () => {
               await logout();
               showSuccess('Signed Out', 'You have been successfully signed out.');

@@ -11,7 +11,8 @@ import {
   onSnapshot,
   Timestamp,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  increment
 } from 'firebase/firestore';
 import { firebaseFirestore } from '../config/firebase';
 
@@ -112,12 +113,18 @@ class MessageService {
       const fieldPath = userRole === 'farmer' ? 'participants.farmerId' : 'participants.shopId';
       const q = query(
         collection(firebaseFirestore, 'conversations'),
-        where(fieldPath, '==', userId),
-        orderBy('updatedAt', 'desc')
+        where(fieldPath, '==', userId)
       );
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conversation));
+      const conversations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conversation));
+      
+      // Sort manually to avoid composite index requirement
+      return conversations.sort((a, b) => {
+        const aTime = a.updatedAt?.seconds || 0;
+        const bTime = b.updatedAt?.seconds || 0;
+        return bTime - aTime;
+      });
     } catch (error) {
       console.error('Error getting user conversations:', error);
       throw new Error('Failed to load conversations');
@@ -231,13 +238,20 @@ class MessageService {
     const fieldPath = userRole === 'farmer' ? 'participants.farmerId' : 'participants.shopId';
     const q = query(
       collection(firebaseFirestore, 'conversations'),
-      where(fieldPath, '==', userId),
-      orderBy('updatedAt', 'desc')
+      where(fieldPath, '==', userId)
     );
 
     return onSnapshot(q, (snapshot) => {
       const conversations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Conversation));
-      callback(conversations);
+      
+      // Sort manually to avoid composite index requirement
+      const sortedConversations = conversations.sort((a, b) => {
+        const aTime = a.updatedAt?.seconds || 0;
+        const bTime = b.updatedAt?.seconds || 0;
+        return bTime - aTime;
+      });
+      
+      callback(sortedConversations);
     }, (error) => {
       console.error('Error listening to conversations:', error);
     });
@@ -289,19 +303,6 @@ class MessageService {
     }
   }
 
-  // Helper function for Firebase increment (since we can't import it directly)
-  private increment(value: number) {
-    // In a real implementation, you'd import increment from Firebase
-    // For now, we'll handle this manually in the calling code
-    return value;
-  }
 }
-
-// Helper function to increment Firestore field
-const increment = (value: number) => {
-  // This would normally be imported from firebase/firestore
-  // but we'll handle increments manually for now
-  return value;
-};
 
 export const messageService = new MessageService();

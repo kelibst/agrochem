@@ -21,6 +21,7 @@ interface FarmerHomeScreenProps {
   onRecommendationsPress: () => void;
   onOrdersPress: () => void;
   onCartPress: () => void;
+  onMessagesPress: () => void;
 }
 
 export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
@@ -34,6 +35,7 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
   onRecommendationsPress,
   onOrdersPress,
   onCartPress,
+  onMessagesPress,
 }) => {
   const { theme } = useTheme();
   const { userProfile } = useAuth();
@@ -127,6 +129,19 @@ export const FarmerHomeScreen: React.FC<FarmerHomeScreenProps> = ({
               )}
             </View>
             <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity 
+                onPress={onMessagesPress}
+                style={{
+                  width: 48,
+                  height: 48,
+                  backgroundColor: theme.primaryContainer,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>💬</Text>
+              </TouchableOpacity>
               <TouchableOpacity 
                 onPress={onCartPress}
                 style={{
